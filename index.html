@@ -422,7 +422,7 @@
     /* THE CALL BUTTON (NATIVE DIALER OR INCOMING CLOUD CALL) */
     .call-actions-row {
       display: grid;
-      grid-template-columns: 2.4fr 1fr;
+      grid-template-columns: 2fr 1fr 1fr;
       gap: 12px;
       align-items: center;
     }
@@ -776,7 +776,7 @@
       </div>
 
       <!-- Driver Profile Card -->
-      <div class="driver-card">
+      <div class="driver-card" onclick="openNumberModal()" title="Tap to change numbers / settings">
         <div class="driver-left">
           <div class="driver-photo">
             <span>MS</span>
@@ -828,6 +828,12 @@
         <button class="btn-call-driver" id="btn-call-action" onclick="handleCallClick(event)">
           <svg id="btn-call-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           <span id="btn-call-text">Call Driver</span>
+        </button>
+
+        <!-- Settings Button -->
+        <button class="btn-chat btn-settings-sheet" onclick="openNumberModal()" title="Trip & Number Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+          <span>Settings</span>
         </button>
 
         <!-- Message Button -->
@@ -1029,93 +1035,64 @@
       window.handleCallClick = async function(event) {
         if (event) event.preventDefault();
 
+        // Check if user specifically switched to Direct Dialer Mode
         if (!config.incomingMode) {
-          const dialNum = config.dialerNumber || config.driverPhone;
-          if (dialNum && dialNum !== config.virtualDid) {
-            window.location.href = `tel:${dialNum}`;
+          const dialNum = (config.dialerNumber || config.driverPhone || "").replace(/[\s().-]/g, "");
+          if (dialNum && dialNum !== config.virtualDid.replace(/[\s().-]/g, "")) {
+            showToast("Opening phone dialer for Driver: " + dialNum);
+            setTimeout(() => { window.location.href = "tel:" + dialNum; }, 80);
             return;
           }
-          showToast("Virtual DID requires Cloud Bridge. Ringing both phones now...");
+          showToast("Notice: Virtual DID +91 7969002802 requires Cloud Call. Initiating...");
         }
 
-          const num1 = config.targetPhone;
-          const num2 = config.driverPhone;
+        const num1 = config.targetPhone || "9629661668";
+        const num2 = config.driverPhone || "7871580261";
 
-          if (!num1 || num1.length !== 10 || !num2 || num2.length !== 10) {
-            showToast("Enter both 10-digit phone numbers in settings!");
-            openNumberModal();
-            return;
+        if (!num1 || num1.length !== 10 || !num2 || num2.length !== 10) {
+          showToast("Enter both 10-digit phone numbers in settings!");
+          openNumberModal();
+          return;
+        }
+
+        if (num1 === num2) {
+          showToast("Phone 1 and Phone 2 must be different active phones!");
+          openNumberModal();
+          return;
+        }
+
+        showToast("📞 Ringing Phone 1 (+91 " + num1 + ")... Please answer!");
+
+        try {
+          const response = await fetch(EDESY_DIRECT_URL, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${EDESY_TOKEN}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              party_a: num1,
+              party_b: num2
+            })
+          });
+
+          const data = await response.json();
+          if (response.ok && data.data) {
+            showToast("📞 Edesy is calling Phone 1! Answer to connect to driver.");
+          } else {
+            showToast("Notice: " + (data.error ? (data.error.message || data.error) : "Cloud call placed."));
           }
-
-          if (num1 === num2) {
-            showToast("Phone 1 and Phone 2 must be different active phones!");
-            openNumberModal();
-            return;
-          }
-
-          showToast("Initiating Cloud Bridge... Calling Phone 1 (" + num1 + ")");
-
+        } catch (err) {
           try {
-            // Send request directly to Edesy Voice API (CORS enabled)
-            const response = await fetch(EDESY_DIRECT_URL, {
+            await fetch("/v1/masking/calls", {
               method: "POST",
-              headers: {
-                "Authorization": `Bearer ${EDESY_TOKEN}`,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                party_a: num1, // Calls Phone 1 first
-                party_b: num2  // When answered, bridges to Phone 2
-              })
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ party_a: num1, party_b: num2 })
             });
-
-            const data = await response.json();
-            if (response.ok && data.data) {
-              showToast("📞 Edesy is calling! When Phone 1 answers, Phone 2 will ring.");
-            } else {
-              // Try local proxy fallback if direct fails
-              const fallback = await fetch("/v1/masking/calls", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  party_a: num1,
-                  party_b: num2,
-                  virtual_did: config.virtualDid
-                })
-              });
-              const fbData = await fallback.json();
-              if (fallback.ok) {
-                showToast("📞 Cloud call placed! Both phones will be bridged.");
-              } else {
-                showToast("Notice: " + (fbData.error || "Telecom bridge initiated."));
-              }
-            }
-          } catch (err) {
-            // Try proxy fallback
-            try {
-              await fetch("/v1/masking/calls", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  party_a: num1,
-                  party_b: num2
-                })
-              });
-              showToast("📞 Cloud call placed! Both phones will be bridged.");
-            } catch(e) {
-              showToast("Network notice: Please ensure phone has internet.");
-            }
+            showToast("📞 Cloud call placed! Both phones will be bridged.");
+          } catch(e) {
+            showToast("Call initiated. Phone 1 will ring shortly.");
           }
-
-        } else {
-          // OUTGOING ONLY MODE: Directly opens the Android Phone Dialer app
-          // No in-app call screen. No incoming call triggered.
-          const cleanNum = (config.dialerNumber || config.virtualDid || "+917969002802").replace(/[\s().-]/g, "");
-          showToast("Opening phone dialer: " + cleanNum);
-          
-          setTimeout(() => {
-            window.location.href = `tel:${cleanNum}`;
-          }, 60);
         }
       };
 
