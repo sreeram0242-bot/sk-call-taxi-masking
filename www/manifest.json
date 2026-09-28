@@ -1,0 +1,17 @@
+{
+  "name": "SK Call Taxi Number Masking",
+  "short_name": "Call Masking",
+  "description": "Call Taxi Private Number Masking Demo powered by Edesy Voice API",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23f59e0b'/><path d='M25 45 L32 25 A8 8 0 0 1 40 20 L60 20 A8 8 0 0 1 68 25 L75 45 L80 45 A8 8 0 0 1 88 53 L88 70 A8 8 0 0 1 80 78 L80 82 A4 4 0 0 1 76 86 L68 86 A4 4 0 0 1 64 82 L64 78 L36 78 L36 82 A4 4 0 0 1 32 86 L24 86 A4 4 0 0 1 20 82 L20 78 A8 8 0 0 1 12 70 L12 53 A8 8 0 0 1 20 45 Z' fill='%23000'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

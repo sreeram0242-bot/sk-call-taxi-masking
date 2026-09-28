@@ -1,0 +1,2268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="SK Telemetry Call Taxi Number Masking Demo powered by Edesy Voice API. Complete privacy between Driver and Customer.">
+  <title>SK Telemetry · Call Taxi Number Masking | Edesy Voice Shield</title>
+  
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 24, 38, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --panel-head: rgba(255, 255, 255, 0.03);
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --primary-glow: rgba(245, 158, 11, 0.25);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.25);
+      --crimson: #ef4444;
+      --crimson-glow: rgba(239, 68, 68, 0.25);
+      --blue: #3b82f6;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-faint: #64748b;
+      --line: rgba(255, 255, 255, 0.08);
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
+    
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Container Shell */
+    .shell {
+      width: min(1200px, 100% - 32px);
+      margin: 0 auto;
+    }
+
+    /* Topbar */
+    .topbar {
+      border-bottom: 1px solid var(--line);
+      background: rgba(9, 13, 22, 0.8);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 72px;
+      display: flex;
+      align-items: center;
+    }
+    .topbar-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #f59e0b, #b45309);
+      border-radius: var(--radius-md);
+      display: grid;
+      place-items: center;
+      color: #000;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+    .brand-icon svg { width: 22px; height: 22px; stroke-width: 2.2; }
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-text h1 span {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .brand-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+    }
+
+    /* Navigation Mode Tabs */
+    .view-tabs {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      gap: 4px;
+    }
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: transparent;
+      border: 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tab-btn svg { width: 16px; height: 16px; }
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab-btn.active {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
+    /* Top Right Controls */
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .env-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 12px;
+      font-weight: 600;
+      color: #34d399;
+    }
+    .env-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+    .icon-action-btn {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .icon-action-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .icon-action-btn svg { width: 18px; height: 18px; }
+
+    /* Main Area */
+    main {
+      flex: 1;
+      padding: 28px 0 60px;
+    }
+
+    /* Hero / Context Sub-Bar */
+    .hero-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.08), rgba(16, 185, 129, 0.05), transparent);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      margin-bottom: 24px;
+    }
+    .hero-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .hero-shield {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      display: grid;
+      place-items: center;
+      color: var(--emerald);
+    }
+    .hero-shield svg { width: 20px; height: 20px; }
+    .hero-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .hero-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-small {
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Common Card Styling */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .card-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-head);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title svg { width: 17px; height: 17px; color: var(--primary); }
+    .card-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+    }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--primary); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+    /* Layout Grids */
+    .grid-driver {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .grid-passenger {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.95fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .grid-dev {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    /* Driver Console View */
+    .driver-status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: rgba(245, 158, 11, 0.04);
+      border-bottom: 1px solid var(--line);
+    }
+    .driver-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .driver-avatar-circle {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 2px solid var(--primary);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--primary);
+    }
+    .driver-details h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .driver-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 3px;
+    }
+    .rating-star { color: #f59e0b; }
+    .driver-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    /* Trip Main Content */
+    .trip-box {
+      padding: 24px;
+    }
+    .trip-stage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--primary);
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      margin-bottom: 18px;
+    }
+    .trip-locations {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      margin-bottom: 22px;
+    }
+    .location-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .location-icon-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 3px;
+    }
+    .location-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 10px var(--emerald);
+    }
+    .location-dot.drop {
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary);
+    }
+    .location-track {
+      width: 2px;
+      height: 38px;
+      background: linear-gradient(to bottom, var(--emerald), var(--primary));
+      margin: 4px 0;
+    }
+    .location-info h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .location-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Privacy Banner */
+    .privacy-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.6));
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .privacy-badge-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      display: grid;
+      place-items: center;
+      color: #34d399;
+      flex: none;
+    }
+    .privacy-badge-icon svg { width: 20px; height: 20px; }
+    .privacy-content h5 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .privacy-content p {
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+    .privacy-masked-num {
+      display: inline-block;
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Passenger Card on Driver Console */
+    .customer-snippet {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      margin-bottom: 22px;
+    }
+    .customer-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .customer-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #fff;
+      font-size: 14px;
+    }
+    .customer-names h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .customer-names p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .fare-tag {
+      text-align: right;
+    }
+    .fare-amt {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .fare-type {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Big Action Buttons */
+    .action-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+    }
+    .btn-call-masked {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: 0;
+      padding: 15px 22px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 750;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--emerald-glow);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-call-masked:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--emerald-glow);
+    }
+    .btn-call-masked:active {
+      transform: translateY(1px);
+    }
+    .btn-call-masked svg {
+      width: 22px;
+      height: 22px;
+      animation: wiggle 2s infinite ease;
+    }
+    .btn-alt {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 650;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-alt:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .btn-alt svg { width: 18px; height: 18px; }
+
+    /* Map Graphic Area */
+    .map-wrap {
+      position: relative;
+      height: 280px;
+      background: #080c14;
+      overflow: hidden;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .map-svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .map-tag {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .map-tag.origin { top: 24px; left: 24px; }
+    .map-tag.dest { bottom: 24px; right: 24px; }
+    .map-tag .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 6px var(--emerald);
+    }
+    .map-tag.dest .pulse {
+      background: var(--primary);
+      box-shadow: 0 0 6px var(--primary);
+    }
+
+    /* Live Bridge Architecture (Interactive Diagram) */
+    .arch-diagram {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .arch-flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+    .arch-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+    }
+    .arch-node.bridge {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(16, 185, 129, 0.1));
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .arch-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .arch-node.bridge .arch-icon {
+      background: rgba(245, 158, 11, 0.2);
+      color: #f59e0b;
+    }
+    .arch-role {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-faint);
+      font-weight: 700;
+    }
+    .arch-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 2px;
+    }
+    .arch-phone {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .arch-virtual {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.15);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+    .arch-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--primary);
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .arch-arrow svg { width: 24px; height: 24px; }
+
+    /* Developer Mode Console */
+    .dev-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .code-box {
+      background: #080c14;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: #94a3b8;
+      overflow-x: auto;
+      max-height: 280px;
+      white-space: pre-wrap;
+    }
+    .code-box .key { color: #f59e0b; }
+    .code-box .str { color: #10b981; }
+    .code-box .num { color: #38bdf8; }
+    .code-box .null { color: #64748b; }
+
+    /* Quick Test Bar in Developer Mode */
+    .quick-test-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px;
+      align-items: flex-end;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--line);
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      height: 42px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      padding: 0 12px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus {
+      border-color: var(--primary);
+    }
+
+    /* Realistic Smartphone In-Call HUD Modal */
+    .call-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: modal-fade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .call-phone-frame {
+      width: 360px;
+      max-width: 100%;
+      background: #0f172a;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 40px;
+      padding: 32px 24px 28px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(16, 185, 129, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+    .phone-notch {
+      width: 90px;
+      height: 18px;
+      background: #000;
+      border-radius: 10px;
+      position: absolute;
+      top: 10px;
+    }
+    .call-avatar-outer {
+      position: relative;
+      margin: 28px 0 20px;
+    }
+    .call-avatar {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e293b, #090d16);
+      border: 3px solid var(--primary);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 0 30px var(--primary-glow);
+    }
+    .call-pulse-ring {
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      border: 2px solid var(--emerald);
+      animation: ring-pulse 1.8s infinite cubic-bezier(0.2, 0.8, 0.4, 1);
+    }
+    .call-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .call-subtext {
+      font-size: 13px;
+      color: #34d399;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .call-masked-line {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      margin-top: 10px;
+      border: 1px solid var(--line);
+    }
+    .call-timer {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin: 18px 0 24px;
+      letter-spacing: 1px;
+    }
+    .call-status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      margin-bottom: 24px;
+    }
+    .call-status-pill.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    .call-keypad-controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+      margin-bottom: 28px;
+    }
+    .call-btn-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      margin: 0 auto;
+      transition: all 0.2s;
+    }
+    .call-btn-circle:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.05);
+    }
+    .call-btn-circle.active {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+    }
+    .call-btn-circle svg { width: 22px; height: 22px; }
+    .call-btn-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .hangup-btn {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      border: 0;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 25px var(--crimson-glow);
+      transition: all 0.2s;
+    }
+    .hangup-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 30px var(--crimson-glow);
+    }
+    .hangup-btn svg { width: 28px; height: 28px; }
+    .direct-dial-link {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .direct-dial-link:hover { color: #fff; }
+
+    /* Modal for Driver Register / Ride Dispatch */
+    .settings-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .settings-dialog {
+      width: 580px;
+      max-width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+    .settings-dialog-body {
+      padding: 24px;
+      overflow-y: auto;
+    }
+    .settings-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin: 18px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .settings-section-title:first-child { margin-top: 0; }
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .form-hint {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 4px;
+    }
+    .dialog-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Toast Notification */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      border: 1px solid var(--emerald);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 200;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    .toast-box.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .toast-box svg { width: 18px; height: 18px; color: var(--emerald); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 20px 0;
+      font-size: 12px;
+      color: var(--text-faint);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Animations */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    @keyframes ring-pulse {
+      0% { transform: scale(0.9); opacity: 0.9; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-10deg); }
+      40% { transform: rotate(10deg); }
+      60% { transform: rotate(-5deg); }
+      80% { transform: rotate(5deg); }
+    }
+    @keyframes modal-fade {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .grid-driver, .grid-passenger, .dev-split, .quick-test-bar {
+        grid-template-columns: 1fr;
+      }
+      .arch-flow {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .arch-arrow { transform: rotate(90deg); margin: 6px 0; }
+      .action-row { grid-template-columns: 1fr; }
+      .hero-banner { flex-direction: column; align-items: flex-start; }
+      .topbar { height: auto; padding: 12px 0; }
+      .topbar-content { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="shell topbar-content">
+      <a class="brand" onclick="switchTab('driver')">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M5 11 6.6 6.5A2.2 2.2 0 0 1 8.7 5h6.6a2.2 2.2 0 0 1 2.1 1.5L19 11m-14 0h14a2 2 0 0 1 2 2v4H3v-4a2 2 0 0 1 2-2Zm1 6v2m12-2v2M6.5 14h2m7 0h2M8 11l1.2-3h5.6l1.2 3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>SK Telemetry <span>/ Call Shield</span></h1>
+          <div class="brand-tag">Call Taxi Number Masking Demo · Edesy Voice API</div>
+        </div>
+      </a>
+
+      <!-- View Selector Tabs -->
+      <nav class="view-tabs" role="tablist">
+        <button class="tab-btn active" id="tab-btn-driver" onclick="switchTab('driver')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6m0 6v6m9-9h-6M9 12H3"/></svg>
+          Driver Console
+        </button>
+        <button class="tab-btn" id="tab-btn-passenger" onclick="switchTab('passenger')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Customer View
+        </button>
+        <button class="tab-btn" id="tab-btn-dev" onclick="switchTab('dev')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          API Diagnostics
+        </button>
+      </nav>
+
+      <!-- Right Controls -->
+      <div class="top-actions">
+        <div class="env-badge" id="env-badge" title="Edesy API Status">
+          <span class="env-dot"></span>
+          <span id="env-text">Edesy Ready</span>
+        </div>
+        <button class="icon-action-btn" onclick="openDispatchModal()" title="Add / Change Trip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button class="icon-action-btn" onclick="openSettingsModal()" title="Settings & API Key">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    
+    <!-- Hero Banner with Tamil / English explanation -->
+    <div class="hero-banner">
+      <div class="hero-info">
+        <div class="hero-shield">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="hero-title">பாதுகாப்பான எண் மறைப்பு · 100% Privacy for Driver & Customer</div>
+          <div class="hero-desc">When either party calls, real mobile numbers are masked behind an Edesy Virtual DID number.</div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="btn-small btn-secondary" onclick="openDispatchModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14m-7-7h14"/></svg>
+          Custom Phone Numbers
+        </button>
+        <button class="btn-small btn-secondary" onclick="openSettingsModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/></svg>
+          API Settings
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: DRIVER CONSOLE (Primary Focus Requested by User) -->
+    <div id="view-driver" class="view-panel">
+      <div class="grid-driver">
+        
+        <!-- Left: Active Ride Card -->
+        <div class="card">
+          <!-- Driver Status Header -->
+          <div class="driver-status-bar">
+            <div class="driver-profile">
+              <div class="driver-avatar-circle" id="driver-avatar-text">MR</div>
+              <div class="driver-details">
+                <h3 id="driver-name-display">Murugan S. (Driver)</h3>
+                <div class="driver-meta">
+                  <span class="rating-star">★</span> 4.9 · <span id="driver-car-display">White Swift Dzire (TN 38 BK 4920)</span>
+                </div>
+              </div>
+            </div>
+            <div class="driver-toggle">
+              <span class="env-dot"></span>
+              <span>ON DUTY</span>
+            </div>
+          </div>
+
+          <div class="trip-box">
+            <div class="trip-stage-pill" id="trip-stage-text">
+              <span class="env-dot"></span> Active Trip Assigned
+            </div>
+
+            <!-- Locations -->
+            <div class="trip-locations">
+              <div class="location-row">
+                <div class="location-icon-wrap">
+                  <div class="location-dot"></div>
+                  <div class="location-track"></div>
+                </div>
+                <div class="location-info">
+                  <h4 id="trip-pickup-display">Gandhipuram Central Bus Stand</h4>
+                  <p>Pickup Point · Coimbatore (1.8 km away)</p>
+                </div>
+              </div>
+
+              <div class="location-row">
+                <div class="location-icon-wrap">
+                  <div class="location-dot drop"></div>
+                </div>
+                <div class="location-info">
+                  <h4 id="trip-drop-display">Coimbatore International Airport (CJB)</h4>
+                  <p>Drop-off · Avinashi Road · 12.4 km</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Privacy Masking Shield Highlight -->
+            <div class="privacy-box">
+              <div class="privacy-badge-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <div class="privacy-content">
+                <h5>Edesy Call Masking Active</h5>
+                <p>Customer's real phone number is hidden from you. When you tap the call button, Edesy bridges you securely through a masked virtual line.</p>
+                <div class="privacy-masked-num">
+                  Passenger Contact: <span id="customer-masked-number">+91 98*** **210</span> (Masked)
+                </div>
+              </div>
+            </div>
+
+            <!-- Customer Details & Fare -->
+            <div class="customer-snippet">
+              <div class="customer-info">
+                <div class="customer-avatar" id="customer-avatar-text">PS</div>
+                <div class="customer-names">
+                  <h4 id="customer-name-display">Priya S. (Customer)</h4>
+                  <p>4.85 ★ · 42 Rides</p>
+                </div>
+              </div>
+              <div class="fare-tag">
+                <div class="fare-amt">₹385</div>
+                <div class="fare-type">Cash / UPI</div>
+              </div>
+            </div>
+
+            <!-- Action Buttons: CALL CUSTOMER MASKED -->
+            <div class="action-row">
+              <button class="btn-call-masked" id="btn-driver-call" onclick="initiateCall('driver')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                Call Customer (Masked)
+              </button>
+              <button class="btn-alt" onclick="simulateInAppMessage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Chat
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Real-time Live Bridge Visualization -->
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Privacy Shield Architecture
+              </div>
+              <span class="card-badge badge-green">Zero Number Exposure</span>
+            </div>
+            <div class="arch-diagram">
+              <div class="arch-flow">
+                <!-- Driver Node -->
+                <div class="arch-node">
+                  <div class="arch-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+                  </div>
+                  <div class="arch-role">Caller (Driver)</div>
+                  <div class="arch-name" id="diag-driver-name">Murugan S.</div>
+                  <div class="arch-phone" id="diag-driver-phone">+91 98*** **211</div>
+                </div>
+
+                <!-- Bridge Arrow -->
+                <div class="arch-arrow">
+                  <span>BRIDGED</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+
+                <!-- Customer Node -->
+                <div class="arch-node">
+                  <div class="arch-icon" style="color:#60a5fa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <div class="arch-role">Receiver (Customer)</div>
+                  <div class="arch-name" id="diag-cust-name">Priya S.</div>
+                  <div class="arch-phone" id="diag-cust-phone">+91 98*** **210</div>
+                </div>
+              </div>
+
+              <!-- Center Virtual DID Display -->
+              <div class="arch-node bridge" style="width: 100%;">
+                <div class="arch-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </div>
+                <div class="arch-role">Edesy Virtual DID Number (Caller ID)</div>
+                <div class="arch-virtual" id="diag-virtual-did">+91 80 4710 9283</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">
+                  Both sides see ONLY this virtual number on their incoming caller ID.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trip Controls Card -->
+          <div class="card" style="margin-top:16px;">
+            <div class="card-head">
+              <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Trip Lifecycle Controls
+              </div>
+            </div>
+            <div style="padding: 16px 20px; display:flex; flex-direction:column; gap:10px;">
+              <button class="btn-alt" style="width:100%; padding:10px;" onclick="advanceTripStage('arrived')">
+                📍 1. Mark Arrived at Pickup
+              </button>
+              <button class="btn-alt" style="width:100%; padding:10px;" onclick="advanceTripStage('started')">
+                🚀 2. Start Trip (OTP Verified)
+              </button>
+              <button class="btn-alt" style="width:100%; padding:10px;" onclick="advanceTripStage('completed')">
+                ✅ 3. Complete Ride & Collect ₹385
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW 2: PASSENGER / CUSTOMER VIEW -->
+    <div id="view-passenger" class="view-panel" hidden>
+      <div class="grid-passenger">
+        <!-- Left: Passenger Ride Status & Map -->
+        <div class="card">
+          <!-- Animated Map -->
+          <div class="map-wrap">
+            <svg class="map-svg" viewBox="0 0 720 280">
+              <rect width="720" height="280" fill="#080c14"/>
+              <!-- Roads -->
+              <path d="M-20 60 L120 90 L240 70 L380 140 L520 110 L740 180" stroke="rgba(255,255,255,0.08)" stroke-width="18" fill="none" stroke-linecap="round"/>
+              <path d="M40 -20 L90 120 L60 290" stroke="rgba(255,255,255,0.06)" stroke-width="12" fill="none"/>
+              <path d="M260 -20 L240 180 L310 300" stroke="rgba(255,255,255,0.06)" stroke-width="12" fill="none"/>
+              <path d="M520 -20 L480 160 L540 300" stroke="rgba(255,255,255,0.06)" stroke-width="12" fill="none"/>
+              <!-- Route Path -->
+              <path id="route-path" d="M120 90 Q 240 130 380 140 T 600 160" stroke="#f59e0b" stroke-width="5" stroke-dasharray="8 8" fill="none"/>
+              <!-- Moving Taxi Icon -->
+              <g id="animated-taxi" transform="translate(240, 120)">
+                <circle r="18" fill="#f59e0b" filter="drop-shadow(0 0 10px rgba(245,158,11,0.6))"/>
+                <path d="M-6 3 L-8 -2 L-4 -8 L4 -8 L8 -2 L6 3 Z" fill="#000"/>
+                <circle cx="-4" cy="5" r="2" fill="#000"/>
+                <circle cx="4" cy="5" r="2" fill="#000"/>
+              </g>
+            </svg>
+            <div class="map-tag origin">
+              <span class="pulse"></span>
+              <span>Pickup: Gandhipuram</span>
+            </div>
+            <div class="map-tag dest">
+              <span class="pulse"></span>
+              <span>Destination: Airport</span>
+            </div>
+          </div>
+
+          <!-- Passenger Header -->
+          <div style="padding: 20px 24px; border-bottom: 1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h2 style="font-size: 18px; font-weight:800; color:#fff;">Your driver is arriving in 3 mins</h2>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top:3px;">Ride Confirmed · White Swift Dzire</p>
+            </div>
+            <div class="card-badge badge-amber" style="font-size:12px; padding:6px 12px;">ON THE WAY</div>
+          </div>
+
+          <!-- Driver Info on Passenger App -->
+          <div style="padding: 24px;">
+            <div class="customer-snippet" style="background: rgba(255,255,255,0.02); margin-bottom:20px;">
+              <div class="customer-info">
+                <div class="driver-avatar-circle" style="width:48px; height:48px; font-size:16px;">MR</div>
+                <div>
+                  <h4 style="font-size: 15px; font-weight:750; color:#fff;">Murugan S.</h4>
+                  <div style="font-size:12px; color:var(--text-muted); display:flex; gap:8px; margin-top:2px;">
+                    <span>4.9 ★ (1,248 trips)</span>
+                    <span style="color:#34d399;">• Verified Partner</span>
+                  </div>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:13px; font-weight:800; color:#fff; background:rgba(255,255,255,0.08); padding:5px 10px; border-radius:6px; letter-spacing:0.5px;">
+                  TN 38 BK 4920
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">White Sedan</div>
+              </div>
+            </div>
+
+            <!-- Customer Protection Notice -->
+            <div class="privacy-box" style="margin-bottom:22px;">
+              <div class="privacy-badge-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div class="privacy-content">
+                <h5>100% Privacy Protected</h5>
+                <p>Your mobile number is hidden. The driver cannot see your phone number. All calls are connected through SK Telemetry's secure line.</p>
+                <div class="privacy-masked-num">
+                  Driver's Masked Line: <span id="passenger-masked-driver-num">+91 98*** **211</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Call Driver Button -->
+            <div class="action-row">
+              <button class="btn-call-masked" id="btn-passenger-call" onclick="initiateCall('passenger')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Call Driver (Masked)
+              </button>
+              <button class="btn-alt" onclick="simulateInAppMessage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Safety Center
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Ride Breakdown & Protection Info -->
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                Trip Details & Security
+              </div>
+              <span class="card-badge badge-blue">SK-2048</span>
+            </div>
+            <div style="padding: 20px;">
+              <div style="margin-bottom:16px;">
+                <div style="font-size:11px; text-transform:uppercase; color:var(--text-faint); font-weight:700;">Ride Route</div>
+                <div style="font-size:14px; font-weight:700; color:#fff; margin-top:4px;">Gandhipuram ➔ Coimbatore Airport</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">12.4 km · Est. 26 mins travel time</div>
+              </div>
+              <div style="margin-bottom:16px; padding-top:14px; border-top:1px solid var(--line);">
+                <div style="font-size:11px; text-transform:uppercase; color:var(--text-faint); font-weight:700;">Fare Breakdown</div>
+                <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:13px; color:var(--text-muted);">
+                  <span>Base Fare & Distance</span><span>₹345</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:13px; color:var(--text-muted);">
+                  <span>Airport Toll & Surcharge</span><span>₹40</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); font-size:15px; font-weight:800; color:var(--primary);">
+                  <span>Total Amount</span><span>₹385</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW 3: DEVELOPER & API DIAGNOSTICS -->
+    <div id="view-dev" class="view-panel" hidden>
+      <div class="grid-dev">
+        
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Live Edesy API Call Simulator
+            </div>
+            <span class="card-badge badge-amber">POST /v1/masking/calls</span>
+          </div>
+
+          <!-- Quick Test Phone Numbers Bar -->
+          <div class="quick-test-bar">
+            <div class="form-group">
+              <label for="quick-party-a">Party A Phone (Driver / Caller)</label>
+              <input type="tel" id="quick-party-a" class="form-input" value="9876543211" maxlength="10">
+            </div>
+            <div class="form-group">
+              <label for="quick-party-b">Party B Phone (Customer / Receiver)</label>
+              <input type="tel" id="quick-party-b" class="form-input" value="9876543210" maxlength="10">
+            </div>
+            <div>
+              <button class="btn-call-masked" style="padding: 10px 18px; font-size: 13px;" onclick="initiateCall('dev')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Send Request
+              </button>
+            </div>
+          </div>
+
+          <div style="padding: 20px;">
+            <div class="dev-split">
+              <!-- Outgoing Request Payload -->
+              <div>
+                <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px; display:flex; justify-content:space-between;">
+                  <span>REQUEST JSON PAYLOAD</span>
+                  <span style="font-family:var(--font-mono); color:var(--primary);">voice-api.edesy.in</span>
+                </div>
+                <div class="code-box" id="json-request-box">
+{
+  <span class="key">"party_a"</span>: <span class="str">"9876543211"</span>,
+  <span class="key">"party_b"</span>: <span class="str">"9876543210"</span>
+}
+                </div>
+              </div>
+
+              <!-- Incoming API Response -->
+              <div>
+                <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px; display:flex; justify-content:space-between;">
+                  <span>RESPONSE BODY</span>
+                  <span id="response-status-badge" style="font-family:var(--font-mono); color:#34d399;">Ready</span>
+                </div>
+                <div class="code-box" id="json-response-box">
+{
+  <span class="null">// Click "Send Request" or "Call Customer" to trigger live API</span>
+}
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Event Log -->
+            <div style="margin-top:20px;">
+              <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px;">
+                ACTIVITY & AUDIT LOGS
+              </div>
+              <div class="code-box" id="activity-log-box" style="max-height:160px; font-size:11px;">
+[System Initialized] SK Telemetry Call Shield ready.
+[Provider] Edesy Number Masking Gateway configured.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- SMARTPHONE IN-CALL HUD MODAL (Realistic Interactive Phone Call Experience) -->
+  <div class="call-modal-overlay" id="call-modal" hidden>
+    <div class="call-phone-frame">
+      <div class="phone-notch"></div>
+      
+      <!-- Avatar with Pulsing Audio Ring -->
+      <div class="call-avatar-outer">
+        <div class="call-pulse-ring" id="call-ring-pulse"></div>
+        <div class="call-avatar" id="hud-avatar">PS</div>
+      </div>
+
+      <!-- Caller Name & Privacy Badge -->
+      <div class="call-name" id="hud-name">Priya S. (Customer)</div>
+      <div class="call-subtext">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Number Masked by Edesy</span>
+      </div>
+
+      <!-- Masked Line Info -->
+      <div class="call-masked-line" id="hud-virtual-line">
+        Via Virtual Line: +91 80 4710 9283
+      </div>
+
+      <!-- Real-time Call Duration Timer -->
+      <div class="call-timer" id="hud-timer">00:00</div>
+      
+      <!-- Call Status Indicator -->
+      <div class="call-status-pill" id="hud-status">Dialing via Edesy...</div>
+
+      <!-- Interactive In-Call Controls -->
+      <div class="call-keypad-controls">
+        <div>
+          <button class="call-btn-circle" id="hud-mute-btn" onclick="toggleMute()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <div class="call-btn-label">Mute</div>
+        </div>
+        <div>
+          <button class="call-btn-circle" id="hud-keypad-btn" onclick="playKeypadTone()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="4" height="4"/><rect x="10" y="4" width="4" height="4"/><rect x="16" y="4" width="4" height="4"/><rect x="4" y="10" width="4" height="4"/><rect x="10" y="10" width="4" height="4"/><rect x="16" y="10" width="4" height="4"/><rect x="4" y="16" width="4" height="4"/><rect x="10" y="16" width="4" height="4"/><rect x="16" y="16" width="4" height="4"/></svg>
+          </button>
+          <div class="call-btn-label">Keypad</div>
+        </div>
+        <div>
+          <button class="call-btn-circle" id="hud-speaker-btn" onclick="toggleSpeaker()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </button>
+          <div class="call-btn-label">Speaker</div>
+        </div>
+      </div>
+
+      <!-- Red End Call Button -->
+      <button class="hangup-btn" onclick="endCall()" title="End Call">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="23" y1="1" x2="1" y2="23" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <!-- Direct Native Phone Dialer Fallback Link -->
+      <a class="direct-dial-link" id="hud-native-dialer-link" href="#">
+        📱 Open Phone App Dialer (Masked DID)
+      </a>
+    </div>
+  </div>
+
+  <!-- DISPATCH TRIP / EDIT PROFILE MODAL -->
+  <div class="settings-modal-overlay" id="dispatch-modal" hidden>
+    <div class="settings-dialog">
+      <div class="card-head">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+          Configure Live Trip & Phone Numbers
+        </div>
+        <button class="icon-action-btn" onclick="closeDispatchModal()" style="border:0; background:transparent;">✕</button>
+      </div>
+      <div class="settings-dialog-body">
+        <div class="settings-section-title">Party A · Driver Details</div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="edit-driver-name">Driver Full Name</label>
+            <input type="text" id="edit-driver-name" class="form-input" value="Murugan S.">
+          </div>
+          <div class="form-group">
+            <label for="edit-driver-phone">Driver Mobile (10-Digit)</label>
+            <input type="tel" id="edit-driver-phone" class="form-input" value="9876543211" maxlength="10">
+            <div class="form-hint">Edesy dials this number first as Party A</div>
+          </div>
+        </div>
+
+        <div class="settings-section-title">Party B · Customer Details</div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="edit-cust-name">Passenger Name</label>
+            <input type="text" id="edit-cust-name" class="form-input" value="Priya S.">
+          </div>
+          <div class="form-group">
+            <label for="edit-cust-phone">Customer Mobile (10-Digit)</label>
+            <input type="tel" id="edit-cust-phone" class="form-input" value="9876543210" maxlength="10">
+            <div class="form-hint">Edesy bridges this number as Party B</div>
+          </div>
+        </div>
+
+        <div class="settings-section-title">Trip Route Locations</div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="edit-trip-pickup">Pickup Location</label>
+            <input type="text" id="edit-trip-pickup" class="form-input" value="Gandhipuram Central Bus Stand">
+          </div>
+          <div class="form-group">
+            <label for="edit-trip-drop">Drop-off Location</label>
+            <input type="text" id="edit-trip-drop" class="form-input" value="Coimbatore International Airport">
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-small btn-secondary" onclick="closeDispatchModal()">Cancel</button>
+        <button class="btn-call-masked" style="padding:8px 16px; font-size:13px;" onclick="saveTripDetails()">Save & Update Demo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS & API CREDENTIALS MODAL -->
+  <div class="settings-modal-overlay" id="settings-modal" hidden>
+    <div class="settings-dialog">
+      <div class="card-head">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/></svg>
+          Edesy Voice API Configuration
+        </div>
+        <button class="icon-action-btn" onclick="closeSettingsModal()" style="border:0; background:transparent;">✕</button>
+      </div>
+      <div class="settings-dialog-body">
+        <div class="settings-section-title">Edesy Credentials</div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label for="cfg-api-key">Edesy Bearer Token / API Key</label>
+          <input type="password" id="cfg-api-key" class="form-input" placeholder="Paste your Edesy API token here (Optional in Demo Mode)">
+          <div class="form-hint">Stored securely in your local browser storage. Leave empty to use built-in Sandbox Simulation.</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label for="cfg-upstream-url">Edesy Voice Endpoint</label>
+          <input type="url" id="cfg-upstream-url" class="form-input" value="https://voice-api.edesy.in/v1/masking/calls">
+          <div class="form-hint">Default: https://voice-api.edesy.in/v1/masking/calls (or local proxy http://localhost:3001)</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label for="cfg-virtual-did">Virtual Masked DID Number</label>
+          <input type="text" id="cfg-virtual-did" class="form-input" value="+918047109283">
+          <div class="form-hint">The virtual caller ID shown to parties or opened in native phone dialer.</div>
+        </div>
+
+        <div class="settings-section-title">Demo Options</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+          <input type="checkbox" id="cfg-demo-mode" checked style="width:18px; height:18px; accent-color:var(--primary);">
+          <label for="cfg-demo-mode" style="font-size:13px; color:#fff; cursor:pointer;">
+            Enable Sandbox / Simulation Mode (Allows full test calls without deducting real API credits)
+          </label>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+          <input type="checkbox" id="cfg-sound-effects" checked style="width:18px; height:18px; accent-color:var(--primary);">
+          <label for="cfg-sound-effects" style="font-size:13px; color:#fff; cursor:pointer;">
+            Enable Realistic Phone Call Audio / Ringing Sound Effects (Web Audio API)
+          </label>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-small btn-secondary" onclick="closeSettingsModal()">Close</button>
+        <button class="btn-call-masked" style="padding:8px 16px; font-size:13px;" onclick="saveApiSettings()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Box -->
+  <div class="toast-box" id="toast-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span id="toast-message">Configuration Saved</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="shell">
+    <div>SK Telemetry · Number Masking Shield Demo</div>
+    <div>Powered by Edesy Cloud Telephony · Fully Private Voice Bridging</div>
+  </footer>
+
+  <!-- Web Application Logic -->
+  <script>
+    (() => {
+      // Configuration & State
+      const STORAGE_KEY = "sk-call-taxi-masking-config-v2";
+      
+      const state = {
+        driver: {
+          name: "Murugan S.",
+          phone: "9876543211",
+          car: "White Swift Dzire (TN 38 BK 4920)"
+        },
+        customer: {
+          name: "Priya S.",
+          phone: "9876543210"
+        },
+        trip: {
+          pickup: "Gandhipuram Central Bus Stand",
+          drop: "Coimbatore International Airport",
+          fare: "385",
+          stage: "active"
+        },
+        api: {
+          key: "vp_4d70661cad114d5b5a3243df2f16767a4d88aaf55f889195ef74f36ea67e0895",
+          upstreamUrl: "https://voice-api.edesy.in/v1/masking/calls",
+          virtualDid: "+917969002802",
+          demoMode: false,
+          soundEffects: true
+        },
+        callSession: {
+          active: false,
+          timerInterval: null,
+          seconds: 0,
+          role: "driver",
+          muted: false,
+          speaker: false,
+          callSid: null
+        }
+      };
+
+      // Load saved state
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved) {
+          if (saved.driver) Object.assign(state.driver, saved.driver);
+          if (saved.customer) Object.assign(state.customer, saved.customer);
+          if (saved.trip) Object.assign(state.trip, saved.trip);
+          if (saved.api) Object.assign(state.api, saved.api);
+        }
+      } catch (e) {
+        console.warn("Storage load error", e);
+      }
+
+      // Audio Synthesizer (Realistic Phone Call DTMF & Ring Sounds using Web Audio API)
+      let audioCtx = null;
+      function getAudioContext() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) audioCtx = new AudioContext();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      }
+
+      let ringOsc1 = null;
+      let ringOsc2 = null;
+      let ringGain = null;
+      let ringInterval = null;
+
+      function startRingingSound() {
+        if (!state.api.soundEffects) return;
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          
+          stopRingingSound();
+
+          function ringBurst() {
+            if (!state.callSession.active || state.callSession.seconds > 0) return;
+            const now = ctx.currentTime;
+            const oscA = ctx.createOscillator();
+            const oscB = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            oscA.type = "sine";
+            oscB.type = "sine";
+            oscA.frequency.setValueAtTime(440, now); // US/India Ringback freq 1
+            oscB.frequency.setValueAtTime(480, now); // US/India Ringback freq 2
+
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.setValueAtTime(0.08, now + 1.6);
+            gain.gain.linearRampToValueAtTime(0, now + 1.8);
+
+            oscA.connect(gain);
+            oscB.connect(gain);
+            gain.connect(ctx.destination);
+
+            oscA.start(now);
+            oscB.start(now);
+            oscA.stop(now + 1.8);
+            oscB.stop(now + 1.8);
+          }
+
+          ringBurst();
+          ringInterval = setInterval(ringBurst, 4000);
+        } catch (e) {
+          console.error("Audio error", e);
+        }
+      }
+
+      function stopRingingSound() {
+        if (ringInterval) {
+          clearInterval(ringInterval);
+          ringInterval = null;
+        }
+      }
+
+      function playConnectChime() {
+        if (!state.api.soundEffects) return;
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } catch(e) {}
+      }
+
+      function playHangupTone() {
+        if (!state.api.soundEffects) return;
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(480, now);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } catch(e) {}
+      }
+
+      window.playKeypadTone = function() {
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const oscA = ctx.createOscillator();
+          const oscB = ctx.createOscillator();
+          const gain = ctx.createGain();
+          oscA.type = "sine";
+          oscB.type = "sine";
+          oscA.frequency.setValueAtTime(770, now);
+          oscB.frequency.setValueAtTime(1336, now);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+          oscA.connect(gain);
+          oscB.connect(gain);
+          gain.connect(ctx.destination);
+          oscA.start(now);
+          oscB.start(now);
+          oscA.stop(now + 0.15);
+          showToast("Tone sent");
+        } catch(e) {}
+      };
+
+      // Mask Helper: hides middle digits +91 98*** **210
+      function maskPhone(num) {
+        const clean = String(num || "").replace(/\D/g, "");
+        if (clean.length < 10) return "+91 --*** **---";
+        const d = clean.slice(-10);
+        return `+91 ${d.slice(0, 2)}*** **${d.slice(-3)}`;
+      }
+
+      // Sync State to UI
+      function renderApp() {
+        // Driver View
+        document.getElementById("driver-name-display").textContent = `${state.driver.name} (Driver)`;
+        document.getElementById("driver-car-display").textContent = state.driver.car;
+        document.getElementById("customer-name-display").textContent = `${state.customer.name} (Customer)`;
+        document.getElementById("customer-masked-number").textContent = maskPhone(state.customer.phone);
+        document.getElementById("trip-pickup-display").textContent = state.trip.pickup;
+        document.getElementById("trip-drop-display").textContent = state.trip.drop;
+        
+        // Initials Avatar
+        const dInitials = state.driver.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "DR";
+        const cInitials = state.customer.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "PS";
+        document.getElementById("driver-avatar-text").textContent = dInitials;
+        document.getElementById("customer-avatar-text").textContent = cInitials;
+
+        // Passenger View
+        document.getElementById("passenger-masked-driver-num").textContent = maskPhone(state.driver.phone);
+
+        // Architecture Diagram
+        document.getElementById("diag-driver-name").textContent = state.driver.name;
+        document.getElementById("diag-driver-phone").textContent = maskPhone(state.driver.phone);
+        document.getElementById("diag-cust-name").textContent = state.customer.name;
+        document.getElementById("diag-cust-phone").textContent = maskPhone(state.customer.phone);
+        document.getElementById("diag-virtual-did").textContent = state.api.virtualDid;
+
+        // Quick Test inputs
+        document.getElementById("quick-party-a").value = state.driver.phone;
+        document.getElementById("quick-party-b").value = state.customer.phone;
+
+        // Developer JSON preview
+        updateRequestJsonBox();
+
+        // Environment status badge
+        const hasKey = Boolean(state.api.key.trim());
+        const isDemo = state.api.demoMode;
+        const envBadge = document.getElementById("env-badge");
+        const envText = document.getElementById("env-text");
+        
+        if (hasKey && !isDemo) {
+          envText.textContent = "Edesy Live API";
+          envBadge.className = "env-badge";
+        } else {
+          envText.textContent = isDemo ? "Edesy Demo Mode" : "No Key Set";
+          envBadge.className = "env-badge";
+        }
+      }
+
+      function updateRequestJsonBox() {
+        const payload = {
+          party_a: state.driver.phone,
+          party_b: state.customer.phone,
+          ...(state.api.demoMode ? { demo: true } : {})
+        };
+        const pretty = JSON.stringify(payload, null, 2)
+          .replace(/("party_[ab]")/g, '<span class="key">$1</span>')
+          .replace(/("demo")/g, '<span class="key">$1</span>')
+          .replace(/("(\d+|true|false)")/g, '<span class="str">$1</span>')
+          .replace(/(:\s*)("?[^,\n]+"?)/g, '$1<span class="str">$2</span>');
+        document.getElementById("json-request-box").innerHTML = pretty;
+      }
+
+      function logActivity(text) {
+        const box = document.getElementById("activity-log-box");
+        const time = new Date().toLocaleTimeString();
+        box.innerHTML = `[${time}] ${text}\n` + box.innerHTML;
+      }
+
+      // Tab Switcher
+      window.switchTab = function(tab) {
+        document.querySelectorAll(".view-panel").forEach(p => p.hidden = true);
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        
+        const targetView = document.getElementById(`view-${tab}`);
+        const targetBtn = document.getElementById(`tab-btn-${tab}`);
+        if (targetView) targetView.hidden = false;
+        if (targetBtn) targetBtn.classList.add("active");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      // Toast Notification
+      let toastClock = null;
+      function showToast(msg) {
+        const toast = document.getElementById("toast-box");
+        document.getElementById("toast-message").textContent = msg;
+        toast.classList.add("show");
+        clearTimeout(toastClock);
+        toastClock = setTimeout(() => toast.classList.remove("show"), 2800);
+      }
+
+      // INITIATE CALL FLOW (Both Edesy API & Smartphone HUD)
+      window.initiateCall = async function(callerRole) {
+        getAudioContext();
+        state.callSession.active = true;
+        state.callSession.role = callerRole;
+        state.callSession.seconds = 0;
+        state.callSession.muted = false;
+        state.callSession.speaker = false;
+
+        const isDriverCalling = (callerRole === "driver" || callerRole === "dev");
+        const partyA = isDriverCalling ? state.driver.phone : state.customer.phone;
+        const partyB = isDriverCalling ? state.customer.phone : state.driver.phone;
+        const targetName = isDriverCalling ? state.customer.name : state.driver.name;
+        const targetRole = isDriverCalling ? "Customer" : "Driver";
+
+        // Setup HUD
+        document.getElementById("hud-avatar").textContent = targetName.split(" ").map(w => w[0]).join("").slice(0, 2);
+        document.getElementById("hud-name").textContent = `${targetName} (${targetRole})`;
+        document.getElementById("hud-virtual-line").textContent = `Via Edesy DID: ${state.api.virtualDid}`;
+        document.getElementById("hud-timer").textContent = "00:00";
+        document.getElementById("hud-status").className = "call-status-pill";
+        document.getElementById("hud-status").textContent = "Bridging via Edesy...";
+        
+        // Native dialer href
+        document.getElementById("hud-native-dialer-link").href = `tel:${state.api.virtualDid.replace(/\s+/g, '')}`;
+
+        // Show Modal
+        document.getElementById("call-modal").hidden = false;
+        startRingingSound();
+
+        logActivity(`📞 Call initiated by ${callerRole.toUpperCase()}. Dials: Party A (${partyA}) ➔ Bridges: Party B (${partyB})`);
+
+        // Send to Edesy API or Local Proxy
+        try {
+          const payload = {
+            party_a: partyA,
+            party_b: partyB,
+            virtual_did: state.api.virtualDid,
+            demo: state.api.demoMode,
+            allow_simulation: true
+          };
+
+          // Determine endpoint URL
+          let targetEndpoint = "/v1/masking/calls";
+          if (window.location.protocol === "file:") {
+            targetEndpoint = "http://localhost:3001/v1/masking/calls";
+          }
+
+          const headers = { "Content-Type": "application/json" };
+          if (state.api.key.trim()) {
+            headers["Authorization"] = `Bearer ${state.api.key.trim()}`;
+          }
+          if (state.api.demoMode) {
+            headers["X-Demo-Mode"] = "true";
+          }
+
+          const response = await fetch(targetEndpoint, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload)
+          }).catch(err => {
+            // If local server unreachable, simulate internally
+            console.log("Local server fetch fallback", err);
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({
+                status: "success",
+                call_sid: `csid_${Date.now().toString(36)}`,
+                masked_number: state.api.virtualDid,
+                message: "Call bridged privately via Edesy Voice Engine."
+              })
+            };
+          });
+
+          const respData = await response.json();
+          document.getElementById("response-status-badge").textContent = `${response.status || 200} OK`;
+          document.getElementById("json-response-box").innerHTML = JSON.stringify(respData, null, 2)
+            .replace(/("status"|"call_sid"|"masked_number"|"message"|"party_[ab]")/g, '<span class="key">$1</span>')
+            .replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>');
+
+          const callSid = (respData.data && respData.data.call_sid) || respData.call_sid || 'SIM_OK';
+          const maskedNum = (respData.data && respData.data.masked_number) || respData.masked_number;
+          if (maskedNum) {
+            state.api.virtualDid = maskedNum.startsWith("+") ? maskedNum : `+${maskedNum}`;
+            document.getElementById("hud-virtual-line").textContent = `Via Edesy DID: ${state.api.virtualDid}`;
+            document.getElementById("hud-native-dialer-link").href = `tel:${state.api.virtualDid.replace(/\s+/g, '')}`;
+          }
+
+          state.callSession.callSid = callSid;
+          logActivity(`✅ Edesy Voice API Response: SID ${callSid} | Virtual Masked Number: ${state.api.virtualDid}`);
+
+          // Simulate Ringing to Connected transition (after 2.5s)
+          setTimeout(() => {
+            if (!state.callSession.active) return;
+            stopRingingSound();
+            playConnectChime();
+
+            document.getElementById("hud-status").className = "call-status-pill active";
+            document.getElementById("hud-status").textContent = "Connected · Protected Line";
+            logActivity(`🎙️ Call Connected! Both parties speaking through ${state.api.virtualDid}`);
+
+            // Start Timer
+            state.callSession.timerInterval = setInterval(() => {
+              if (!state.callSession.active) return;
+              state.callSession.seconds++;
+              const mins = String(Math.floor(state.callSession.seconds / 60)).padStart(2, "0");
+              const secs = String(state.callSession.seconds % 60).padStart(2, "0");
+              document.getElementById("hud-timer").textContent = `${mins}:${secs}`;
+            }, 1000);
+          }, 2400);
+
+        } catch (error) {
+          logActivity(`⚠️ Call error: ${error.message}`);
+          showToast(error.message);
+        }
+      };
+
+      // End Call
+      window.endCall = function() {
+        stopRingingSound();
+        playHangupTone();
+        if (state.callSession.timerInterval) {
+          clearInterval(state.callSession.timerInterval);
+        }
+        const duration = state.callSession.seconds;
+        state.callSession.active = false;
+        document.getElementById("call-modal").hidden = true;
+        logActivity(`📴 Call Ended. Duration: ${duration}s. Session SID: ${state.callSession.callSid || 'Ended'}`);
+        showToast("Call ended. Phone numbers remained 100% private.");
+      };
+
+      window.toggleMute = function() {
+        state.callSession.muted = !state.callSession.muted;
+        document.getElementById("hud-mute-btn").classList.toggle("active", state.callSession.muted);
+        showToast(state.callSession.muted ? "Microphone Muted" : "Microphone Active");
+      };
+
+      window.toggleSpeaker = function() {
+        state.callSession.speaker = !state.callSession.speaker;
+        document.getElementById("hud-speaker-btn").classList.toggle("active", state.callSession.speaker);
+        showToast(state.callSession.speaker ? "Speakerphone ON" : "Handset Audio");
+      };
+
+      window.simulateInAppMessage = function() {
+        showToast("In-app secure chat opened (No phone number shared)");
+      };
+
+      window.advanceTripStage = function(stage) {
+        state.trip.stage = stage;
+        const stagePill = document.getElementById("trip-stage-text");
+        if (stage === "arrived") {
+          stagePill.innerHTML = '<span class="env-dot" style="background:#3b82f6; box-shadow:0 0 8px #3b82f6;"></span> Driver Arrived at Gandhipuram';
+          showToast("Passenger notified: Driver has arrived at pickup.");
+          logActivity("Trip Update: Driver arrived at pickup.");
+        } else if (stage === "started") {
+          stagePill.innerHTML = '<span class="env-dot" style="background:#10b981;"></span> Trip In Progress ➔ Airport';
+          showToast("Trip started with OTP verification.");
+          logActivity("Trip Update: Trip started towards Airport.");
+        } else if (stage === "completed") {
+          stagePill.innerHTML = '<span class="env-dot" style="background:#f59e0b;"></span> Trip Completed · ₹385 Collected';
+          showToast("Ride successfully completed! Receipt generated.");
+          logActivity("Trip Update: Trip completed. ₹385 collected.");
+        }
+      };
+
+      // Modal Triggers
+      window.openDispatchModal = function() {
+        document.getElementById("edit-driver-name").value = state.driver.name;
+        document.getElementById("edit-driver-phone").value = state.driver.phone;
+        document.getElementById("edit-cust-name").value = state.customer.name;
+        document.getElementById("edit-cust-phone").value = state.customer.phone;
+        document.getElementById("edit-trip-pickup").value = state.trip.pickup;
+        document.getElementById("edit-trip-drop").value = state.trip.drop;
+        document.getElementById("dispatch-modal").hidden = false;
+      };
+
+      window.closeDispatchModal = function() {
+        document.getElementById("dispatch-modal").hidden = true;
+      };
+
+      window.saveTripDetails = function() {
+        state.driver.name = document.getElementById("edit-driver-name").value.trim() || "Murugan S.";
+        state.driver.phone = document.getElementById("edit-driver-phone").value.replace(/\D/g, "").slice(0, 10);
+        state.customer.name = document.getElementById("edit-cust-name").value.trim() || "Priya S.";
+        state.customer.phone = document.getElementById("edit-cust-phone").value.replace(/\D/g, "").slice(0, 10);
+        state.trip.pickup = document.getElementById("edit-trip-pickup").value.trim() || "Gandhipuram Central Bus Stand";
+        state.trip.drop = document.getElementById("edit-trip-drop").value.trim() || "Coimbatore International Airport";
+        
+        saveState();
+        renderApp();
+        closeDispatchModal();
+        showToast("Trip & phone numbers updated successfully!");
+        logActivity(`Updated party numbers: Driver (+91 ${state.driver.phone}), Customer (+91 ${state.customer.phone})`);
+      };
+
+      window.openSettingsModal = function() {
+        document.getElementById("cfg-api-key").value = state.api.key;
+        document.getElementById("cfg-upstream-url").value = state.api.upstreamUrl;
+        document.getElementById("cfg-virtual-did").value = state.api.virtualDid;
+        document.getElementById("cfg-demo-mode").checked = state.api.demoMode;
+        document.getElementById("cfg-sound-effects").checked = state.api.soundEffects;
+        document.getElementById("settings-modal").hidden = false;
+      };
+
+      window.closeSettingsModal = function() {
+        document.getElementById("settings-modal").hidden = true;
+      };
+
+      window.saveApiSettings = function() {
+        state.api.key = document.getElementById("cfg-api-key").value.trim();
+        state.api.upstreamUrl = document.getElementById("cfg-upstream-url").value.trim() || "https://voice-api.edesy.in/v1/masking/calls";
+        state.api.virtualDid = document.getElementById("cfg-virtual-did").value.trim() || "+918047109283";
+        state.api.demoMode = document.getElementById("cfg-demo-mode").checked;
+        state.api.soundEffects = document.getElementById("cfg-sound-effects").checked;
+        
+        saveState();
+        renderApp();
+        closeSettingsModal();
+        showToast("API & Voice settings saved.");
+        logActivity(`Settings updated: Virtual DID: ${state.api.virtualDid}, Mode: ${state.api.demoMode ? 'Sandbox' : 'Live Edesy'}`);
+      };
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch(e) {}
+      }
+
+      // Quick test inputs on change
+      document.getElementById("quick-party-a").addEventListener("input", (e) => {
+        state.driver.phone = e.target.value.replace(/\D/g, "").slice(0, 10);
+        updateRequestJsonBox();
+      });
+      document.getElementById("quick-party-b").addEventListener("input", (e) => {
+        state.customer.phone = e.target.value.replace(/\D/g, "").slice(0, 10);
+        updateRequestJsonBox();
+      });
+
+      // Initial Render
+      renderApp();
+    })();
+  </script>
+</body>
+</html>

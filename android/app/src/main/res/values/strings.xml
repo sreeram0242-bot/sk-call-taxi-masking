@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SK Call Taxi</string>
+    <string name="title_activity_main">SK Call Taxi</string>
+    <string name="package_name">com.sktelemetry.calltaxi</string>
+    <string name="custom_url_scheme">com.sktelemetry.calltaxi</string>
+</resources>

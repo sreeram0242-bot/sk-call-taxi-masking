@@ -1,0 +1,22 @@
+{
+  "name": "sk-call-taxi-masking-demo",
+  "version": "1.0.0",
+  "description": "SK Telemetry Call Taxi Number Masking Demo powered by Edesy Voice API",
+  "main": "proxy.js",
+  "scripts": {
+    "start": "node proxy.js"
+  },
+  "keywords": [
+    "call-masking",
+    "edesy",
+    "call-taxi",
+    "privacy"
+  ],
+  "author": "SK Telemetry",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
+  }
+}

@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: sk-call-taxi-masking
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node proxy.js
+    envVars:
+      - key: EDESY_API_KEY
+        value: vp_4d70661cad114d5b5a3243df2f16767a4d88aaf55f889195ef74f36ea67e0895
+      - key: EDESY_URL
+        value: https://voice-api.edesy.in/v1/masking/calls
+      - key: PORT
+        value: 10000

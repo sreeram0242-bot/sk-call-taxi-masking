@@ -1,0 +1,6 @@
+{
+  "appId": "com.sktelemetry.calltaxi",
+  "appName": "SK Call Taxi",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
