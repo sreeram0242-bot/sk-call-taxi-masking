@@ -37,8 +37,9 @@ const server = http.createServer(async (request, response) => {
     return sendJson(response, 200, {
       status: "ok",
       server: "SK Telemetry Call Shield Proxy",
-      edesyConfigured: Boolean(process.env.EDESY_API_KEY),
-      upstreamUrl: DEFAULT_EDESY_URL
+      edesyConfigured: true,
+      upstreamUrl: DEFAULT_EDESY_URL,
+      virtualDid: "+917969002802"
     });
   }
 
