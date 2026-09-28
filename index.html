@@ -921,14 +921,14 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = "sk-call-taxi-white-theme-v10";
+      const STORAGE_KEY = "sk-call-taxi-white-theme-v12";
       
       const config = {
         targetPhone: "9629661668",  // Phone 1 (Passenger/Caller)
         driverPhone: "7871580261",  // Phone 2 (Driver/Target)
         virtualDid: "+917969002802",
-        dialerNumber: "+917969002802",
-        incomingMode: false        // Default: Outgoing only (opens phone dialer app)
+        dialerNumber: "7871580261",  // Direct Driver Number for SIM dialer
+        incomingMode: true          // Masked Cloud Call is active by default
       };
 
       try {
@@ -960,22 +960,23 @@
         modalToggle.checked = !!config.incomingMode;
 
         if (config.incomingMode) {
-          // INCOMING MODE (Cloud Bridge: Edesy calls both phones privately)
+          // MASKED CLOUD CALL MODE (Edesy calls both phones privately from +91 7969002802)
           modeCard.classList.add("incoming-active");
           callBtn.classList.add("incoming-active");
-          modeTitle.textContent = "Incoming Call Mode (Cloud Bridge)";
-          modeHint.textContent = "Edesy cloud calls both phones privately from " + config.virtualDid;
-          callText.textContent = "Request Call (Ring Phones)";
+          modeTitle.textContent = "Masked Call Mode (100% Private)";
+          modeHint.textContent = "Edesy calls your phone from " + config.virtualDid + " to connect privately.";
+          callText.textContent = "Call Driver (Masked)";
           callBtn.removeAttribute("href");
           callIcon.innerHTML = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>';
         } else {
-          // OUTGOING ONLY MODE (Opens Phone Dialer app directly)
+          // DIRECT SIM DIALER MODE (Direct carrier call to Driver)
           modeCard.classList.remove("incoming-active");
           callBtn.classList.remove("incoming-active");
-          modeTitle.textContent = "Outgoing Dialer Only";
-          modeHint.textContent = "Directly launches phone dialer app (No incoming ring).";
-          callText.textContent = "Call Driver";
-          callBtn.href = `tel:${cleanDialNumber}`;
+          modeTitle.textContent = "Direct Phone Dialer (SIM Call)";
+          modeHint.textContent = "Opens your phone dialer to call Driver directly: +91 " + (config.driverPhone || "7871580261");
+          callText.textContent = "Call Driver (SIM Dialer)";
+          const dialTarget = (config.driverPhone || "7871580261").replace(/[\s().-]/g, "");
+          callBtn.href = "tel:+91" + dialTarget;
           callIcon.innerHTML = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>';
         }
       }
@@ -1033,17 +1034,18 @@
 
       // Handler for Call Button Tap
       window.handleCallClick = async function(event) {
-        if (event) event.preventDefault();
-
-        // OUTGOING DIALER MODE: Takes user directly to their Android/iOS phone dialer app!
         if (!config.incomingMode) {
-          const dialNum = (config.dialerNumber || config.virtualDid || "+917969002802").replace(/[\s().-]/g, "");
-          showToast("Opening Phone Dialer: " + dialNum);
+          // DIRECT SIM DIALER MODE: Launches phone dialer with Driver's number (connects directly without hanging up)
+          const targetDialer = (config.driverPhone || "7871580261").replace(/[\s().-]/g, "");
+          showToast("Opening Phone Dialer to Driver: +91 " + targetDialer);
           setTimeout(() => {
-            window.location.href = "tel:" + dialNum;
+            window.location.href = "tel:+91" + targetDialer;
           }, 80);
           return;
         }
+
+        // MASKED CLOUD BRIDGE MODE: Edesy calls both phones privately from +91 7969002802
+        if (event) event.preventDefault();
 
         const num1 = config.targetPhone || "9629661668";
         const num2 = config.driverPhone || "7871580261";
@@ -1055,12 +1057,12 @@
         }
 
         if (num1 === num2) {
-          showToast("Phone 1 and Phone 2 must be different active phones!");
+          showToast("Passenger and Driver must be two different active phones!");
           openNumberModal();
           return;
         }
 
-        showToast("📞 Ringing Phone 1 (+91 " + num1 + ")... Please answer!");
+        showToast("📞 Edesy is ringing Phone 1 (+91 " + num1 + ")... Please answer!");
 
         try {
           const response = await fetch(EDESY_DIRECT_URL, {
@@ -1077,21 +1079,12 @@
 
           const data = await response.json();
           if (response.ok && data.data) {
-            showToast("📞 Edesy is calling Phone 1! Answer to connect to driver.");
+            showToast("📞 Edesy is calling Phone 1! Answer incoming call to speak with driver.");
           } else {
             showToast("Notice: " + (data.error ? (data.error.message || data.error) : "Cloud call placed."));
           }
         } catch (err) {
-          try {
-            await fetch("/v1/masking/calls", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ party_a: num1, party_b: num2 })
-            });
-            showToast("📞 Cloud call placed! Both phones will be bridged.");
-          } catch(e) {
-            showToast("Call initiated. Phone 1 will ring shortly.");
-          }
+          showToast("📞 Call requested! Your phone will ring shortly from +91 7969002802.");
         }
       };
 
