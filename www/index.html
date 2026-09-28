@@ -825,10 +825,10 @@
       <!-- CALL ACTIONS ROW (OPENS PHONE DIALER APP DIRECTLY OR RINGS PHONE) -->
       <div class="call-actions-row">
         <!-- Main Call Action Button -->
-        <a class="btn-call-driver" id="btn-call-action" href="tel:+917969002802" onclick="handleCallClick(event)">
+        <button class="btn-call-driver" id="btn-call-action" onclick="handleCallClick(event)">
           <svg id="btn-call-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           <span id="btn-call-text">Call Driver</span>
-        </a>
+        </button>
 
         <!-- Message Button -->
         <button class="btn-chat" onclick="showToast('Driver notified: On the way to pickup location.')">
@@ -915,14 +915,14 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = "sk-call-taxi-white-theme-v7";
+      const STORAGE_KEY = "sk-call-taxi-white-theme-v9";
       
       const config = {
         targetPhone: "9629661668",  // Phone 1 (Passenger/Caller)
         driverPhone: "7871580261",  // Phone 2 (Driver/Target)
         virtualDid: "+917969002802",
         dialerNumber: "+917969002802",
-        incomingMode: false         // Default: Outgoing only (opens dialer)
+        incomingMode: true         // Default: Outgoing only (opens dialer)
       };
 
       try {
@@ -1027,9 +1027,16 @@
 
       // Handler for Call Button Tap
       window.handleCallClick = async function(event) {
-        if (config.incomingMode) {
-          // INCOMING MODE: Trigger Cloud Call Bridge so Edesy calls both phones!
-          if (event) event.preventDefault();
+        if (event) event.preventDefault();
+
+        if (!config.incomingMode) {
+          const dialNum = config.dialerNumber || config.driverPhone;
+          if (dialNum && dialNum !== config.virtualDid) {
+            window.location.href = `tel:${dialNum}`;
+            return;
+          }
+          showToast("Virtual DID requires Cloud Bridge. Ringing both phones now...");
+        }
 
           const num1 = config.targetPhone;
           const num2 = config.driverPhone;
