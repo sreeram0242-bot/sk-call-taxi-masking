@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="theme-color" content="#ffffff">
   <title>SK Cabs · Ride Confirmed</title>
   
@@ -798,7 +801,7 @@
             <span id="call-mode-title">Outgoing Dialer Mode</span>
           </div>
           <div class="call-mode-hint" id="call-mode-hint">
-            Directly launches phone dialer app (No incoming ring).
+            Dials driver directly via phone dialer app (No call drops).
           </div>
         </div>
         <div class="call-mode-toggle-wrap">
@@ -888,7 +891,7 @@
       <div>
         <label class="input-label" for="input-dialer-number">Dialer Outgoing Number (When Outgoing Mode is active)</label>
         <div class="phone-input-wrap">
-          <input type="text" id="input-dialer-number" class="phone-field" value="+917969002802">
+          <input type="text" id="input-dialer-number" class="phone-field" value="+917871580261">
         </div>
         <div class="input-subtext">Number opened in phone dialer. Enter driver's phone directly or +917969002802.</div>
       </div>
@@ -912,13 +915,13 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = "sk-call-taxi-white-theme-v3";
+      const STORAGE_KEY = "sk-call-taxi-white-theme-v6";
       
       const config = {
         targetPhone: "9629661668",  // Phone 1 (Passenger/Caller)
         driverPhone: "7871580261",  // Phone 2 (Driver/Target)
         virtualDid: "+917969002802",
-        dialerNumber: "+917969002802",
+        dialerNumber: "+917871580261",
         incomingMode: false         // Default: Outgoing only (opens dialer)
       };
 
@@ -931,7 +934,7 @@
       const EDESY_TOKEN = "vp_4d70661cad114d5b5a3243df2f16767a4d88aaf55f889195ef74f36ea67e0895";
 
       function syncUI() {
-        const cleanDialNumber = (config.dialerNumber || config.virtualDid || "+917969002802").replace(/[\s().-]/g, "");
+        const cleanDialNumber = (config.dialerNumber && !config.dialerNumber.includes("7969002802") ? config.dialerNumber : "+91" + config.driverPhone).replace(/[\s().-]/g, "");
         const callBtn = document.getElementById("btn-call-action");
         const callIcon = document.getElementById("btn-call-icon");
         const callText = document.getElementById("btn-call-text");
@@ -1100,7 +1103,7 @@
         } else {
           // OUTGOING ONLY MODE: Directly opens the Android Phone Dialer app
           // No in-app call screen. No incoming call triggered.
-          const cleanNum = (config.dialerNumber || config.virtualDid || "+917969002802").replace(/[\s().-]/g, "");
+          const cleanNum = (config.dialerNumber && !config.dialerNumber.includes("7969002802") ? config.dialerNumber : "+91" + config.driverPhone).replace(/[\s().-]/g, "");
           showToast("Opening phone dialer: " + cleanNum);
           
           setTimeout(() => {

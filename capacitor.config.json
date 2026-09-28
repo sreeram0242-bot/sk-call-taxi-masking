@@ -1,6 +1,10 @@
-{
+﻿{
   "appId": "com.sktelemetry.calltaxi",
   "appName": "SK Call Taxi",
   "webDir": "www",
-  "bundledWebRuntime": false
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://sreeram0242-bot.github.io/sk-call-taxi-masking/",
+    "cleartext": true
+  }
 }
