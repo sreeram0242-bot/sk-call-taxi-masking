@@ -82,6 +82,7 @@ Content-Type: application/json
 | **"Call cuts as soon as target answers"** | One of the phone numbers is identical to the other, or target carrier blocked simultaneous incoming SIP leg. | Ensure `party_a` and `party_b` are two different, active 10-digit SIM cards with valid network coverage. |
 | **"Dialer opened the real number of driver"** | Fallback link was set to `tel:<driver_real_number>`. | Never expose the real number in the dialer. Keep all calling strictly through the masked Cloud Bridge. |
 | **"App looks like a developer sandbox / in-app fake call"** | Simulated HUD screens with fake ringtones and audio waveforms instead of real mobile telephony. | Remove all fake VoIP modals. Build an authentic Uber/Ola white-theme ride confirmation UI. When the call is initiated, the phone's native telephony app rings. |
+| **"Settings button or modals not responding"** | JavaScript syntax error in script block silently prevents execution of global functions. | Validate entire client JS with syntax check (`new Function(code)`) before committing. Also provide multiple accessible entry points (header gear, driver card, and action row button). |
 
 ---
 
