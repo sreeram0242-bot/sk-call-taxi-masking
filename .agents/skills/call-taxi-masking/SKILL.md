@@ -1,53 +1,187 @@
 ---
 name: call-taxi-masking
-description: Expert architectural guide, rules, and troubleshooting runbook for Call Taxi Number Masking applications using Telecom Voice APIs (Edesy, Twilio, Exotel) and Capacitor Android apps. Use this whenever building or debugging ride-hailing apps, number masking, virtual DID routing, or mobile phone call bridges.
+description: Comprehensive expert architectural guide, chronological post-mortem of mistakes, telecom voice API specifications (Edesy, Twilio, Exotel), and Capacitor Android rules for Call Taxi Number Masking applications. Use this whenever building or debugging ride-hailing apps, virtual DID routing, cloud voice bridges, or mobile telephony apps.
 ---
 
-# 🚕 Call Taxi Number Masking & Telecom Voice Integration Skill
+# 🚕 Call Taxi Number Masking & Telecom Voice Architecture Skill
 
-This skill documents critical architectural principles, telecom realities, API specifications, and design guidelines learned from real-world Call Taxi number masking implementations.
-
----
-
-## 1. Core Architectural Realities (Telecom & Number Masking)
-
-### ❌ The Fatal Mistake: Direct Phone Dialer (`tel:`) to Virtual DID
-- **What was attempted**: Opening the phone's native dialer with the virtual DID: `<a href="tel:+917969002802">Call Driver</a>`.
-- **What happens in reality**: The user taps Call on their phone. The carrier (Jio, Airtel, Vi) routes the call to Edesy's SIP/PRI trunk. Because the trunk DID is dedicated to outbound masking and has no inbound routing session enrolled, the carrier immediately returns `486 Busy` or `603 Decline`.
-- **User experience**: **The phone flashes, does not ring, and hangs up in under 0.5 seconds.**
-
-### ✅ The Industry Standard Solution: Click-to-Call Cloud Bridge
-Real-world ride-hailing services (Ola, Uber, Rapido) **never** have the passenger call an unmapped DID directly from a dialer. Instead, they use a **Cloud-Initiated Bridge**:
-1. Passenger taps **"Call Driver (Masked)"** inside the app.
-2. The app invokes the Voice API: `POST /v1/masking/calls` with Party A (Passenger) and Party B (Driver).
-3. The Cloud PBX places an outbound call to Party A's phone.
-4. Party A's phone rings with an incoming cellular GSM call showing Caller ID: `+91 7969002802` (Masked DID).
-5. As soon as Party A answers on their normal phone screen, the Cloud PBX dials Party B (Driver), also displaying `+91 7969002802`.
-6. Both parties speak through the secure bridge.
-7. **Privacy Result**: Neither party ever sees the other party's personal phone number. Both numbers are 100% masked.
+> **Target Domain:** Ride-Hailing Apps (Uber, Ola, Rapido clones), Telecom Voice APIs, Call Taxi Number Masking, Capacitor Android Applications.  
+> **Core Purpose:** Ensure complete caller/driver privacy (virtual number masking) and eliminate broken telephony implementations in future projects.
 
 ---
 
-## 2. Edesy Voice API Reference & Best Practices
+## 1. Chronological Post-Mortem: Every Mistake Made from the Beginning
 
-### API Host & Authentication
-- **Correct Base URL**: `https://voice-api.edesy.in` (Do NOT use `voice.edesy.in` which is an inactive domain).
-- **Authentication Header**:
+To ensure neither Antigravity nor any developer repeats these errors in future client projects, here is the chronological breakdown of every mistake made from start to finish, the technical root cause, and the permanent architectural solution.
+
+```
+       MISTAKE CHRONOLOGY IN CALL TAXI MASKING IMPLEMENTATION
+┌───────────────────────────────────────────────────────────────────┐
+│ 1. Dark Developer UI        ➔ Rejected (Client wanted Ola/Uber)   │
+│ 2. Fake In-App VoIP Modal   ➔ Rejected (Needed real GSM telephony)│
+│ 3. Sample Dummy Numbers     ➔ Polluted Edesy CDR with failed logs │
+│ 4. Dialer (`tel:+9179...`)   ➔ Hung up instantly without ringing   │
+│ 5. Dialer (`tel:<real_num>`) ➔ Exposed private driver number      │
+│ 6. Hidden Cloud Toggle      ➔ Users tapped broken dialer first    │
+│ 7. JS Syntax Error (`else`) ➔ Froze Settings button completely    │
+│ 8. Notch Area Insets Cutoff ➔ Header buttons unclickable on phone │
+│ 9. Static Localhost APKs    ➔ Constant tedious reinstallations    │
+│ 10. Wrong Host Domain       ➔ voice.edesy.in DNS ENOTFOUND error  │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Mistake 1: Dark Developer/Hacker Dashboard Instead of Authentic Consumer UI
+- **What Was Built:** A dark-mode developer dashboard with neon green borders, JSON debug panels, and "Demo / Sandbox" labels.
+- **Why It Failed:** Consumer ride-hailing clients (Uber, Ola, Rapido) expect an **authentic, white-background (#ffffff) ride confirmation screen**. Dark developer interfaces look unprofessional to non-technical passengers and clients.
+- **The Permanent Rule:** Always use clean white backgrounds (`#ffffff`), modern typography (`Inter` / `system-ui`), driver profile cards with rating stars (★ 4.9), vehicle model, license plate badge (`TN 38 BK 4920`), and START OTP badges (`4821`). Never show "demo", "sandbox", or "debug" text on production screens.
+
+---
+
+### Mistake 2: Fake In-App VoIP Call Modal with Audio SFX
+- **What Was Built:** An interactive in-browser/in-app call HUD with simulated DTMF ringtones, audio wave animations, speakerphone, mute, and a red hang-up button.
+- **Why It Failed:** The user explicitly rejected this: *"the call does not want to look like in-app call, make that goes in phone dialer / real phone"*. Number masking is **cellular GSM telephony**, not an in-browser WebRTC simulation.
+- **The Permanent Rule:** Never create fake in-app VoIP screens when the client asks for number masking. Calls must ring on the user's **native smartphone dialer/lock screen** over real cellular GSM lines.
+
+---
+
+### Mistake 3: Hardcoding Dummy Placeholder Numbers (`9876543210` / `9876543211`)
+- **What Was Built:** Sample numbers from API docs (`9876543210` and `9876543211`) were left in scripts, README files, and test inputs.
+- **Why It Failed:** When test calls were fired, the Edesy Cloud PBX attempted to dial those non-existent numbers. The calls failed, and the client's Edesy Web Portal dashboard displayed:
+  `9876543210 <-> 9876543211 | failed`
+  This caused massive client confusion: *"in edesy history it shows wrong mobile number history"*.
+- **The Permanent Rule:** Never leave dummy placeholder numbers in production templates. Always default to real, verified 10-digit SIM cards or prompt the user for their active numbers.
+
+---
+
+### Mistake 4: Expecting Mobile Phone Dialers (`tel:+917969002802`) to Call Virtual Trunks
+- **What Was Built:** `<a href="tel:+917969002802">Call Driver</a>` in the app, expecting that tapping it would open the phone dialer and dial the masked number.
+- **Why It Failed:** `+91 7969002802` is an **outbound-only SIP/PRI trunk**. It does not accept inbound calls from mobile SIM cards. When dialed from Jio, Airtel, or Vi:
+  - Carrier returns `SIP 486 Busy` or `SIP 603 Decline`.
+  - The phone hangs up within 0.5s without ringing.
+  - The carrier drops the call before it reaches Edesy, so **nothing is recorded in Edesy history**.
+- **The Permanent Rule:** **Mobile dialers CANNOT call outbound virtual DIDs directly.** Masked calling must ALWAYS be initiated via **Click-to-Call Cloud Bridge** (`POST /v1/masking/calls`).
+
+---
+
+### Mistake 5: Exposing the Real Driver Phone Number in the Dialer Link
+- **What Was Built:** To stop the dialer from hanging up, the link was changed to `<a href="tel:+917871580261">`.
+- **Why It Failed:** The client saw the driver's real private mobile number in their phone dialer: *"now if i touch the call button it dials the real number of the target"*. This violated the core number masking privacy requirement.
+- **The Permanent Rule:** Never place the raw customer or driver phone number into a public `href="tel:..."` link unless the user explicitly switches to a dedicated "Direct SIM Call" mode.
+
+---
+
+### Mistake 6: Making the Working Cloud Bridge a Hidden Toggle
+- **What Was Built:** Cloud Bridge was added behind a toggle ("Incoming Mode"), but Outgoing Dialer mode was kept as default.
+- **Why It Failed:** Users simply tap the big green "Call Driver" button. Because the dialer was default, it opened the uncallable virtual DID and hung up.
+- **The Permanent Rule:** The primary **"Call Driver (Masked)"** button must **ALWAYS trigger the Cloud Bridge by default**.
+
+---
+
+### Mistake 7: JavaScript Syntax Errors (`Unexpected token 'else'`)
+- **What Was Built:** When modifying `handleCallClick`, an orphan `} else {` block was left in `index.html`.
+- **Why It Failed:** In an Android Capacitor WebView, an unhandled syntax error halts the entire `<script>` tag. `window.openNumberModal()` was never registered, rendering the settings button completely unresponsive with zero visible error message to the client.
+- **The Permanent Rule:** Always execute an automated AST/syntax check (`node -e "new Function(scriptCode)"`) before committing any client-side JavaScript.
+
+---
+
+### Mistake 8: Missing Safe Area Insets for Mobile Notches
+- **What Was Built:** Positioned map header settings buttons at `top: 16px; left: 16px;`.
+- **Why It Failed:** On modern Android devices with camera punch-holes or rounded status bars, `top: 16px` fell directly under the system status bar, making buttons unclickable.
+- **The Permanent Rule:** Always use `top: max(16px, env(safe-area-inset-top, 16px));` and provide multiple accessible entry points (e.g. tapping the driver card and an action bar button).
+
+---
+
+### Mistake 9: Static Localhost APKs Requiring Reinstallation
+- **What Was Built:** Packaged static assets into an APK or pointed to `http://localhost:3001`.
+- **Why It Failed:** Every small code fix required re-compiling a 5MB APK, re-uploading to GitHub Releases, and forcing the client to uninstall and reinstall the APK.
+- **The Permanent Rule:** Always configure `capacitor.config.json` with a live remote server URL (e.g. GitHub Pages):
+  ```json
+  {
+    "server": {
+      "url": "https://<username>.github.io/<repo>/",
+      "cleartext": true
+    }
+  }
+  ```
+  Every `git push` to `main` instantly updates the client's phone within 60 seconds without reinstalling the APK.
+
+---
+
+### Mistake 10: Calling Non-Existent API Domain (`voice.edesy.in`)
+- **What Was Built:** `https://voice.edesy.in/v1/masking/calls`.
+- **Why It Failed:** `voice.edesy.in` does not resolve (`ENOTFOUND`). The actual API gateway is `voice-api.edesy.in`, while the web portal is `masking.edesy.in`.
+- **The Permanent Rule:** Always verify DNS endpoints. For Edesy:
+  - **API Host:** `https://voice-api.edesy.in`
+  - **Web Portal:** `https://masking.edesy.in`
+
+---
+
+## 2. Telecom Architecture: How Number Masking ACTUALLY Works
+
+### Why Direct Dialing (`tel:`) Fails vs Why Cloud Bridge Works
+
+```
+❌ BROKEN PATTERN: Direct Dialing an Outbound Virtual Trunk
+[ User Phone ] ──(Dials +91 7969002802)──> [ Carrier (Airtel/Jio) ] ──> [ Edesy Trunk Gateway ]
+                                                                                   │
+                                                         ❌ REJECTED: SIP 486 Busy / 603 Decline
+                                                         (Trunk does not accept inbound calls)
+                                                         (Hangs up in 0.5s; 0s in CDR)
+
+─────────────────────────────────────────────────────────────────────────────────────────────
+
+✅ WORKING PATTERN: Click-to-Call Cloud Bridge (The Ola / Uber Way)
+[ Passenger Phone ]                                                        [ Driver Phone ]
+   (9629661668)                                                              (7871580261)
+        ▲                                                                         ▲
+        │ 1. Rings incoming from +91 7969002802                                   │
+        │    (Passenger answers on normal phone)                                  │
+        │                                                                         │ 2. Rings incoming
+        │                         ┌──────────────────────┐                        │    from +91 7969002802
+        └─────────────────────────┤   Edesy Cloud PBX    ├────────────────────────┘
+                                  │ (voice-api.edesy.in) │
+                                  └──────────────────────┘
+                                             ▲
+                                             │ HTTP POST /v1/masking/calls
+                                             │ { party_a, party_b }
+                                    [ Mobile App Screen ]
+```
+
+### The Click-to-Call Protocol Steps:
+1. **User taps "Call Driver" in the App.**
+2. App sends HTTPS request: `POST https://voice-api.edesy.in/v1/masking/calls` with:
+   - `party_a`: Passenger phone (`9629661668`)
+   - `party_b`: Driver phone (`7871580261`)
+3. Edesy Cloud PBX places an **outbound call** to `party_a`.
+4. Passenger's phone rings with an incoming cellular call showing Caller ID: `+91 7969002802`.
+5. Passenger answers the phone.
+6. Edesy immediately dials `party_b`, also displaying Caller ID: `+91 7969002802`.
+7. Driver answers. Both parties speak over standard cellular GSM with 100% privacy.
+
+---
+
+## 3. Edesy Voice API Reference & Payloads
+
+### Headers
 ```http
 Authorization: Bearer <API_KEY>
 Content-Type: application/json
 ```
 
-### Initiate Masked Call (Click-to-Call)
-- **Endpoint**: `POST https://voice-api.edesy.in/v1/masking/calls`
-- **Payload**:
+### 1. Initiate Masked Call (Click-to-Call)
+```http
+POST https://voice-api.edesy.in/v1/masking/calls
+```
+**Request Body:**
 ```json
 {
   "party_a": "9629661668",
   "party_b": "7871580261"
 }
 ```
-- **Success Response (HTTP 201 Created)**:
+**Success Response (HTTP 201 Created):**
 ```json
 {
   "data": {
@@ -63,73 +197,76 @@ Content-Type: application/json
 }
 ```
 
-### Query Call Status & Hangup Cause
-- **Endpoint**: `GET https://voice-api.edesy.in/v1/masking/calls/{call_sid}`
-- **Response Fields to Inspect**:
-  - `data.status`: `initiated` | `completed` | `failed`
-  - `data.hangup_cause`: `normal` | `failed` | `no_answer`
-  - `data.duration_sec`: Call duration in seconds.
-  - `data.recording_url`: Call recording link.
+### 2. Query Call Status & Hangup Cause
+```http
+GET https://voice-api.edesy.in/v1/masking/calls/{call_sid}
+```
+**Response Object:**
+```json
+{
+  "data": {
+    "caller_number": "9629661668",
+    "target_number": "7871580261",
+    "masked_number": "917969002802",
+    "direction": "click_to_call",
+    "status": "completed",
+    "duration_sec": 34,
+    "hangup_cause": "normal",
+    "recording_url": "https://voice-api.edesy.in/v1/public/recordings/masking/..."
+  }
+}
+```
 
 ---
 
-## 3. Troubleshooting & Common Pitfalls Runbook
+## 4. UI/UX Design System for Ride-Hailing Apps
 
-| Symptom / Complaint | Root Cause | Fix / Correct Action |
-| :--- | :--- | :--- |
-| **"Call got hanged up not even ringing"** | User dialed virtual DID (+91 7969002802) from mobile phone dialer. Virtual trunk lines reject unmapped inbound calls. | Trigger `POST /v1/masking/calls` via Cloud Bridge instead of opening `tel:` dialer. User answers incoming ring from virtual DID. |
-| **"In edesy history it shows wrong mobile number history"** | Edesy web portal dashboard displays cached test calls from earlier when sample dummy numbers (9876543210 / 9876543211) were used in test scripts. Real calls are located in the **Call Logs** tab or require refreshing the browser page. | 1. Never leave dummy numbers in default inputs.<br>2. Direct the user to the **Call Logs** menu in Edesy portal to see actual completed calls. |
-| **"Call cuts as soon as target answers"** | One of the phone numbers is identical to the other, or target carrier blocked simultaneous incoming SIP leg. | Ensure `party_a` and `party_b` are two different, active 10-digit SIM cards with valid network coverage. |
-| **"Dialer opened the real number of driver"** | Fallback link was set to `tel:<driver_real_number>`. | Never expose the real number in the dialer. Keep all calling strictly through the masked Cloud Bridge. |
-| **"App looks like a developer sandbox / in-app fake call"** | Simulated HUD screens with fake ringtones and audio waveforms instead of real mobile telephony. | Remove all fake VoIP modals. Build an authentic Uber/Ola white-theme ride confirmation UI. When the call is initiated, the phone's native telephony app rings. |
-| **"Settings button or modals not responding"** | JavaScript syntax error in script block silently prevents execution of global functions. | Validate entire client JS with syntax check (`new Function(code)`) before committing. Also provide multiple accessible entry points (header gear, driver card, and action row button). |
-
----
-
-## 4. UI/UX Standard for Call Taxi Confirmation Screens
-
-When building ride-hailing client applications:
-1. **Visual Style**: Clean, high-contrast **White Background (#ffffff)** matching Uber/Ola native apps. No dark cyberpunk or developer dashboard styles unless explicitly requested.
-2. **Ride Confirmation Essentials**:
-   - **Driver Card**: Photo avatar, verified badge, rating (e.g. 4.9 stars), driver name, total trips.
-   - **Vehicle Details**: Model (e.g. Swift Dzire Tour Sedan), registration plate (e.g. `TN 38 BK 4920`).
-   - **Trip OTP**: Distinctive start-trip PIN badge (e.g. `START OTP: 4821`).
-   - **Route Summary**: Pickup `Gandhipuram` to Drop `Airport CJB`, distance and fare.
-   - **Animated Map**: City grid with moving taxi icon along route.
-3. **Primary Call Action**:
-   - Prominent green button: **"Call Driver (Masked)"**.
-   - Clear subtext banner: *"Number Masking Active: Your real number is 100% private. Calls connect via +91 7969002802."*
-   - On tap: Instantly initiates Cloud Bridge and displays feedback: *"Calling your phone... Answer to connect privately with Driver."*
+### Design Checklist for Passenger Ride Confirmation:
+- **Background:** High-contrast pure white (`#ffffff`). Never dark-theme.
+- **Top Map Section:** Clean SVG or MapLibre city map with route polyline and animated vehicle marker.
+- **Arrival Status:** Bold ETA (`Driver arriving in 3 mins`) + Vehicle subtitle (`White Swift Dzire · Sedan`).
+- **Trip OTP Badge:** Prominent verification box: `START OTP: 4821`.
+- **Driver Card:** Driver photo avatar, verified shield, star rating (`★ 4.9`), trips count (`1,248 trips`), and license plate (`TN 38 BK 4920`).
+- **Primary Action Row:**
+  - Big green button: **"Call Driver (Masked)"** (Triggers Cloud Bridge).
+  - Clean secondary button: **"Settings"** (Configures phone numbers).
+  - Clean secondary button: **"Chat"** (In-app messaging).
+- **Route Summary:** Pickup (`Gandhipuram`) ➔ Drop (`Airport CJB`) + Fare (`₹385`).
 
 ---
 
-## 5. Android APK Auto-Update Architecture (Capacitor + GitHub Pages)
+## 5. Android Capacitor Auto-Update Configuration
 
-To prevent clients from needing to re-download or reinstall APKs after every bug fix:
-1. Set Capacitor to load the live web application in `capacitor.config.json`:
+### `capacitor.config.json`
 ```json
 {
   "appId": "com.sk.calltaximasking",
   "appName": "SK Taxi",
   "webDir": "www",
   "server": {
-    "url": "https://<github-username>.github.io/<repo-name>/",
+    "url": "https://sreeram0242-bot.github.io/sk-call-taxi-masking/",
     "cleartext": true
   }
 }
 ```
-2. Configure GitHub Pages to build from the `main` branch.
-3. Any changes pushed to `index.html` on `main` are served live within 60 seconds to any device running the APK.
-4. Keep `www/index.html` synchronized with `index.html` so offline fallbacks continue to function.
+
+### Android Manifest Permissions (`android/app/src/main/AndroidManifest.xml`)
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.CALL_PHONE" />
+<application
+    android:usesCleartextTraffic="true" ...>
+```
 
 ---
 
 ## 6. Pre-Flight Checklist for Future Projects
 
-Before handing off any number masking app to a client:
-- [ ] Confirm Edesy API token has positive wallet balance (INR >= 3.00).
-- [ ] Test `POST /v1/masking/calls` with two distinct real mobile numbers.
-- [ ] Verify both phones ring and the call duration records in Edesy CDR.
-- [ ] Ensure no dummy phone numbers (9876543210) exist in default configuration or storage.
-- [ ] Verify that tapping "Call" initiates Cloud Bridge, NOT direct unmapped dialer `tel:`.
-- [ ] Confirm white-theme Ola/Uber layout with zero "sandbox" or "demo" badges.
+Before delivering any Call Taxi or Number Masking app to a client:
+- [ ] Confirm Edesy API token has positive balance (`INR >= 3.00`).
+- [ ] Test `POST /v1/masking/calls` with two real active SIM cards.
+- [ ] Verify both phones ring and the call records in Edesy CDR.
+- [ ] Ensure no dummy placeholder numbers (`9876543210`) exist in code or default storage.
+- [ ] Verify that tapping "Call" initiates the Cloud Bridge, NOT direct dialer `tel:`.
+- [ ] Validate all client-side JavaScript with AST parser (`new Function(code)`).
+- [ ] Ensure white-theme Ola/Uber layout with zero "demo" or "sandbox" labels.
