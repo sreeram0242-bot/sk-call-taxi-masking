@@ -499,7 +499,7 @@
       font-size: 13px;
     }
 
-    /* MODAL: SET TARGET DESTINATION NUMBER & CALL MODES */
+    /* MODAL: CUSTOMIZE CALL RECIPIENT PHONE NUMBER */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -682,7 +682,7 @@
 
         <!-- City Blocks / Parks -->
         <path d="M-10 20 L90 10 L120 70 L20 80 Z" fill="#e2e8f0" opacity="0.6"/>
-        <path d="M160 20 L280 15 L290 85 L170 90 Z" fill="#dcfce7" opacity="0.5"/> <!-- Green Park -->
+        <path d="M160 20 L280 15 L290 85 L170 90 Z" fill="#dcfce7" opacity="0.5"/>
         <path d="M310 30 L420 20 L440 100 L320 110 Z" fill="#e2e8f0" opacity="0.6"/>
         <path d="M20 140 L130 130 L140 220 L30 230 Z" fill="#e2e8f0" opacity="0.5"/>
         <path d="M180 160 L320 140 L340 260 L200 270 Z" fill="#e2e8f0" opacity="0.6"/>
@@ -721,11 +721,9 @@
         <!-- Moving Taxi Marker -->
         <g class="taxi-vehicle" transform="translate(180, 130)">
           <circle r="18" fill="#ffffff" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.25))"/>
-          <!-- Taxi Top View Graphic -->
           <rect x="-7" y="-12" width="14" height="24" rx="4" fill="#111827"/>
-          <rect x="-5" y="-7" width="10" height="5" rx="1" fill="#facc15"/> <!-- Windshield -->
+          <rect x="-5" y="-7" width="10" height="5" rx="1" fill="#facc15"/>
           <rect x="-5" y="3" width="10" height="4" rx="1" fill="#cbd5e1"/>
-          <!-- Headlights -->
           <circle cx="-5" cy="-12" r="1.5" fill="#fef08a"/>
           <circle cx="5" cy="-12" r="1.5" fill="#fef08a"/>
         </g>
@@ -797,7 +795,7 @@
         <div class="call-mode-info">
           <div class="call-mode-badge">
             <span class="mode-indicator" id="mode-indicator"></span>
-            <span id="call-mode-title">Outgoing Dialer Only</span>
+            <span id="call-mode-title">Outgoing Dialer Mode</span>
           </div>
           <div class="call-mode-hint" id="call-mode-hint">
             Directly launches phone dialer app (No incoming ring).
@@ -817,7 +815,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
         <div class="privacy-copy">
-          <strong>Number Masking Active:</strong> Your real phone number is protected. All calls route privately through <strong>+91 7969002802</strong>.
+          <strong>Number Masking Active:</strong> Your real phone number is protected. Calls route privately through <strong>+91 7969002802</strong>.
         </div>
       </div>
 
@@ -853,15 +851,15 @@
   <div class="modal-backdrop" id="number-modal" hidden>
     <div class="modal-content">
       <div class="modal-top">
-        <h3>Call & Privacy Settings</h3>
+        <h3>Call Routing Configuration</h3>
         <button class="btn-modal-close" onclick="closeNumberModal()">✕</button>
       </div>
 
       <!-- Mode Toggle inside modal -->
       <div class="modal-toggle-row">
         <div class="modal-toggle-text">
-          <strong>Incoming Call Mode</strong>
-          <span>Toggle ON so Edesy calls your phone</span>
+          <strong>Incoming Cloud Bridge Mode</strong>
+          <span>Toggle ON so Edesy calls both phones privately</span>
         </div>
         <label class="switch-control">
           <input type="checkbox" id="modal-incoming-toggle" onchange="toggleIncomingMode(this.checked)">
@@ -870,29 +868,29 @@
       </div>
 
       <div>
-        <label class="input-label" for="input-target-phone">Your Mobile Number (Party A / To receive incoming call)</label>
+        <label class="input-label" for="input-target-phone">Phone 1: Caller / Passenger Phone</label>
         <div class="phone-input-wrap">
           <span class="phone-prefix">+91</span>
-          <input type="tel" id="input-target-phone" class="phone-field" maxlength="10" placeholder="Enter your 10-digit mobile number">
+          <input type="tel" id="input-target-phone" class="phone-field" maxlength="10" placeholder="e.g. 9629661668" value="9629661668">
         </div>
-        <div class="input-subtext">Enter your personal active SIM number here. When Incoming Mode is ON, Edesy will call this phone.</div>
+        <div class="input-subtext">The first phone that rings when using Cloud Call. Must be a real active SIM.</div>
       </div>
 
       <div>
-        <label class="input-label" for="input-driver-phone">Target Driver's Number (Party B)</label>
+        <label class="input-label" for="input-driver-phone">Phone 2: Driver / Target Phone</label>
         <div class="phone-input-wrap">
           <span class="phone-prefix">+91</span>
-          <input type="tel" id="input-driver-phone" class="phone-field" maxlength="10" placeholder="Enter driver mobile number">
+          <input type="tel" id="input-driver-phone" class="phone-field" maxlength="10" placeholder="e.g. 7871580261" value="7871580261">
         </div>
-        <div class="input-subtext">Destination number to connect privately with the customer.</div>
+        <div class="input-subtext">The second phone that Edesy bridges to. Must also be a real active SIM.</div>
       </div>
 
       <div>
-        <label class="input-label" for="input-dialer-number">Dialer Outgoing Target (When Outgoing Mode is active)</label>
+        <label class="input-label" for="input-dialer-number">Dialer Outgoing Number (When Outgoing Mode is active)</label>
         <div class="phone-input-wrap">
           <input type="text" id="input-dialer-number" class="phone-field" value="+917969002802">
         </div>
-        <div class="input-subtext">The number that automatically opens in your phone dialer app (e.g. +917969002802 or target number).</div>
+        <div class="input-subtext">Number opened in phone dialer. Enter driver's phone directly or +917969002802.</div>
       </div>
 
       <div>
@@ -900,7 +898,7 @@
         <div class="phone-input-wrap">
           <input type="text" id="input-virtual-did" class="phone-field" value="+917969002802" readonly style="background:#f8fafc; color:#64748b;">
         </div>
-        <div class="input-subtext">Assigned Edesy Cloud DID line shown on caller ID.</div>
+        <div class="input-subtext">Caller ID shown on both phones during cloud bridge.</div>
       </div>
 
       <button class="btn-save-phone" onclick="saveNumbers()">Save Configuration</button>
@@ -914,14 +912,14 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = "sk-call-taxi-white-theme-v2";
+      const STORAGE_KEY = "sk-call-taxi-white-theme-v3";
       
       const config = {
-        targetPhone: "",     // User's own phone number (Party A)
-        driverPhone: "9876543211", // Driver's phone number (Party B)
+        targetPhone: "9629661668",  // Phone 1 (Passenger/Caller)
+        driverPhone: "7871580261",  // Phone 2 (Driver/Target)
         virtualDid: "+917969002802",
         dialerNumber: "+917969002802",
-        incomingMode: false  // Default: Outgoing only (opens dialer)
+        incomingMode: false         // Default: Outgoing only (opens dialer)
       };
 
       try {
@@ -944,8 +942,8 @@
         const modalToggle = document.getElementById("modal-incoming-toggle");
 
         // Sync inputs
-        document.getElementById("input-target-phone").value = config.targetPhone || "";
-        document.getElementById("input-driver-phone").value = config.driverPhone || "";
+        document.getElementById("input-target-phone").value = config.targetPhone || "9629661668";
+        document.getElementById("input-driver-phone").value = config.driverPhone || "7871580261";
         document.getElementById("input-dialer-number").value = config.dialerNumber || config.virtualDid || "+917969002802";
         document.getElementById("input-virtual-did").value = config.virtualDid || "+917969002802";
 
@@ -953,13 +951,13 @@
         modalToggle.checked = !!config.incomingMode;
 
         if (config.incomingMode) {
-          // INCOMING MODE (Cloud Bridge: Edesy calls the user)
+          // INCOMING MODE (Cloud Bridge: Edesy calls both phones privately)
           modeCard.classList.add("incoming-active");
           callBtn.classList.add("incoming-active");
           modeTitle.textContent = "Incoming Call Mode (Cloud Bridge)";
-          modeHint.textContent = "Edesy cloud will call your phone from " + config.virtualDid;
-          callText.textContent = "Request Call (Ring My Phone)";
-          callBtn.removeAttribute("href"); // We will trigger cloud bridge via click
+          modeHint.textContent = "Edesy cloud calls both phones privately from " + config.virtualDid;
+          callText.textContent = "Request Call (Ring Phones)";
+          callBtn.removeAttribute("href");
           callIcon.innerHTML = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>';
         } else {
           // OUTGOING ONLY MODE (Opens Phone Dialer app directly)
@@ -980,7 +978,7 @@
         } catch(e) {}
         syncUI();
         if (isIncoming) {
-          showToast("Incoming Mode ON: Tapping call will ring your phone from " + config.virtualDid);
+          showToast("Incoming Mode ON: Tapping call will ring phones via Edesy Cloud.");
         } else {
           showToast("Outgoing Only: Tapping call will open your phone dialer app.");
         }
@@ -1000,6 +998,16 @@
         const dialer = document.getElementById("input-dialer-number").value.trim() || "+917969002802";
         const isIncoming = document.getElementById("modal-incoming-toggle").checked;
 
+        if (target.length !== 10 || driver.length !== 10) {
+          showToast("Please enter two valid 10-digit phone numbers!");
+          return;
+        }
+
+        if (target === driver) {
+          showToast("Phone 1 and Phone 2 must be different numbers!");
+          return;
+        }
+
         config.targetPhone = target;
         config.driverPhone = driver;
         config.dialerNumber = dialer;
@@ -1011,22 +1019,31 @@
 
         syncUI();
         closeNumberModal();
-        showToast("Settings saved successfully!");
+        showToast("Configuration saved successfully!");
       };
 
       // Handler for Call Button Tap
       window.handleCallClick = async function(event) {
         if (config.incomingMode) {
-          // INCOMING MODE: Trigger Cloud Call Bridge so Edesy calls the user's phone!
+          // INCOMING MODE: Trigger Cloud Call Bridge so Edesy calls both phones!
           if (event) event.preventDefault();
 
-          if (!config.targetPhone || config.targetPhone.length !== 10) {
-            showToast("Please enter your 10-digit phone number first!");
+          const num1 = config.targetPhone;
+          const num2 = config.driverPhone;
+
+          if (!num1 || num1.length !== 10 || !num2 || num2.length !== 10) {
+            showToast("Enter both 10-digit phone numbers in settings!");
             openNumberModal();
             return;
           }
 
-          showToast("Initiating cloud call... Edesy is calling your phone!");
+          if (num1 === num2) {
+            showToast("Phone 1 and Phone 2 must be different active phones!");
+            openNumberModal();
+            return;
+          }
+
+          showToast("Initiating Cloud Bridge... Calling Phone 1 (" + num1 + ")");
 
           try {
             // Send request directly to Edesy Voice API (CORS enabled)
@@ -1037,28 +1054,28 @@
                 "Content-Type": "application/json"
               },
               body: JSON.stringify({
-                party_a: config.targetPhone, // Calls user's phone first
-                party_b: config.driverPhone || "9876543211" // Then connects driver
+                party_a: num1, // Calls Phone 1 first
+                party_b: num2  // When answered, bridges to Phone 2
               })
             });
 
             const data = await response.json();
             if (response.ok && data.data) {
-              showToast("📞 Incoming call initiated! Answer when " + (data.data.masked_number || config.virtualDid) + " calls.");
+              showToast("📞 Edesy is calling! When Phone 1 answers, Phone 2 will ring.");
             } else {
               // Try local proxy fallback if direct fails
               const fallback = await fetch("/v1/masking/calls", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  party_a: config.targetPhone,
-                  party_b: config.driverPhone || "9876543211",
+                  party_a: num1,
+                  party_b: num2,
                   virtual_did: config.virtualDid
                 })
               });
               const fbData = await fallback.json();
               if (fallback.ok) {
-                showToast("📞 Cloud call placed! Edesy is dialing your phone.");
+                showToast("📞 Cloud call placed! Both phones will be bridged.");
               } else {
                 showToast("Notice: " + (fbData.error || "Telecom bridge initiated."));
               }
@@ -1070,11 +1087,11 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  party_a: config.targetPhone,
-                  party_b: config.driverPhone || "9876543211"
+                  party_a: num1,
+                  party_b: num2
                 })
               });
-              showToast("📞 Cloud call placed! Edesy is dialing your phone.");
+              showToast("📞 Cloud call placed! Both phones will be bridged.");
             } catch(e) {
               showToast("Network notice: Please ensure phone has internet.");
             }
@@ -1084,9 +1101,8 @@
           // OUTGOING ONLY MODE: Directly opens the Android Phone Dialer app
           // No in-app call screen. No incoming call triggered.
           const cleanNum = (config.dialerNumber || config.virtualDid || "+917969002802").replace(/[\s().-]/g, "");
-          showToast("Opening phone dialer app: " + cleanNum);
+          showToast("Opening phone dialer: " + cleanNum);
           
-          // Let standard <a href="tel:..."> open native dialer, or execute via location
           setTimeout(() => {
             window.location.href = `tel:${cleanNum}`;
           }, 60);
@@ -1099,7 +1115,7 @@
         document.getElementById("toast-content").textContent = msg;
         pill.classList.add("show");
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => pill.classList.remove("show"), 3200);
+        toastTimer = setTimeout(() => pill.classList.remove("show"), 3400);
       };
 
       syncUI();
