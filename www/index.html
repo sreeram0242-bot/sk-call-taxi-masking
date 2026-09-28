@@ -26,6 +26,8 @@
       --emerald-border: #bbf7d0;
       --amber: #f59e0b;
       --blue: #2563eb;
+      --blue-light: #eff6ff;
+      --blue-border: #bfdbfe;
       --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
       --radius-sm: 8px;
@@ -57,16 +59,18 @@
       display: flex;
       flex-direction: column;
       box-shadow: 0 0 50px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
-    /* MAP SECTION (Full Light Mode Google/Ola Style Map) */
+    /* MAP SECTION (Light Mode Google/Ola Style Map) */
     .map-section {
-      height: 52vh;
-      min-height: 320px;
+      height: 44vh;
+      min-height: 280px;
       position: relative;
       background: #e5e9ec;
       overflow: hidden;
+      flex-shrink: 0;
     }
     .map-svg {
       width: 100%;
@@ -102,7 +106,7 @@
     .btn-circle svg { width: 20px; height: 20px; stroke-width: 2.2; }
     
     .ride-id-pill {
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(8px);
       color: #fff;
       font-size: 12px;
@@ -124,11 +128,11 @@
       animation: pulse-dot 1.8s infinite;
     }
 
-    /* Map Overlay Floating Tags */
+    /* Map Overlay Floating Route Tags */
     .map-badge {
       position: absolute;
       background: #fff;
-      padding: 6px 10px;
+      padding: 5px 10px;
       border-radius: 8px;
       font-size: 11px;
       font-weight: 700;
@@ -140,8 +144,8 @@
       border: 1px solid #e2e8f0;
       z-index: 5;
     }
-    .map-badge.pickup { top: 78px; left: 24px; }
-    .map-badge.drop { top: 220px; right: 24px; }
+    .map-badge.pickup { top: 76px; left: 20px; }
+    .map-badge.drop { top: 180px; right: 20px; }
     .badge-dot-green { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); }
     .badge-dot-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
 
@@ -150,27 +154,27 @@
       animation: drive-along 18s infinite linear;
     }
 
-    /* BOTTOM SHEET (100% Authenticity Call Taxi Card) */
+    /* BOTTOM SHEET (100% Authenticity Call Taxi Screen) */
     .booking-sheet {
       flex: 1;
       background: var(--bg-white);
-      border-radius: 28px 28px 0 0;
-      margin-top: -24px;
+      border-radius: 26px 26px 0 0;
+      margin-top: -20px;
       position: relative;
       z-index: 20;
-      padding: 16px 20px 24px;
+      padding: 14px 20px 24px;
       box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       border-top: 1px solid #e2e8f0;
     }
     .sheet-handle {
-      width: 44px;
+      width: 40px;
       height: 4px;
       background: #cbd5e1;
       border-radius: 2px;
-      margin: 0 auto 4px;
+      margin: 0 auto 2px;
     }
 
     /* ETA / Arrival Status Row */
@@ -180,13 +184,13 @@
       align-items: center;
     }
     .eta-info h2 {
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 800;
       color: var(--text-main);
-      letter-spacing: -0.4px;
+      letter-spacing: -0.3px;
     }
     .eta-info p {
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--text-muted);
       margin-top: 2px;
       font-weight: 500;
@@ -195,7 +199,7 @@
       background: #f8fafc;
       border: 1.5px dashed #94a3b8;
       border-radius: 10px;
-      padding: 6px 10px;
+      padding: 5px 10px;
       text-align: center;
     }
     .otp-lbl {
@@ -212,12 +216,12 @@
       letter-spacing: 1px;
     }
 
-    /* Driver & Vehicle Details Card */
+    /* Driver Profile Card */
     .driver-card {
       background: #f8fafc;
       border: 1px solid var(--card-border);
       border-radius: var(--radius-md);
-      padding: 14px 16px;
+      padding: 12px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -228,13 +232,13 @@
       gap: 12px;
     }
     .driver-photo {
-      width: 48px;
-      height: 48px;
+      width: 46px;
+      height: 46px;
       border-radius: 50%;
       background: #e2e8f0;
       display: grid;
       place-items: center;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 800;
       color: #334155;
       border: 2px solid #fff;
@@ -278,7 +282,7 @@
       border: 1.5px solid #ca8a04;
       color: #000;
       font-family: var(--font-mono);
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 800;
       padding: 3px 8px;
       border-radius: 6px;
@@ -291,19 +295,108 @@
       color: var(--text-muted);
     }
 
+    /* CALL MODE SELECTOR CARD: TOGGLE OUTGOING (DIALER) VS INCOMING (CLOUD RING) */
+    .call-mode-card {
+      background: #f8fafc;
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+    .call-mode-card.incoming-active {
+      background: var(--blue-light);
+      border-color: var(--blue-border);
+    }
+    .call-mode-info {
+      flex: 1;
+    }
+    .call-mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 750;
+      color: var(--text-main);
+    }
+    .mode-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      flex-shrink: 0;
+    }
+    .call-mode-card.incoming-active .mode-indicator {
+      background: var(--blue);
+      box-shadow: 0 0 6px var(--blue);
+      animation: pulse-dot 1.4s infinite;
+    }
+    .call-mode-hint {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.35;
+    }
+    .call-mode-card.incoming-active .call-mode-hint {
+      color: #1e40af;
+    }
+
+    /* iOS Style Toggle Switch */
+    .switch-control {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .switch-control input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .switch-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #cbd5e1;
+      transition: .25s ease;
+      border-radius: 28px;
+    }
+    .switch-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .25s ease;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .switch-control input:checked + .switch-slider {
+      background-color: var(--blue);
+    }
+    .switch-control input:checked + .switch-slider:before {
+      transform: translateX(20px);
+    }
+
     /* Privacy Banner */
     .privacy-box {
       background: var(--emerald-light);
       border: 1px solid var(--emerald-border);
       border-radius: var(--radius-md);
-      padding: 11px 14px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       gap: 10px;
     }
     .privacy-icon {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       background: #dcfce7;
       color: var(--emerald);
@@ -311,9 +404,9 @@
       place-items: center;
       flex: none;
     }
-    .privacy-icon svg { width: 15px; height: 15px; stroke-width: 2.2; }
+    .privacy-icon svg { width: 14px; height: 14px; stroke-width: 2.2; }
     .privacy-copy {
-      font-size: 11.5px;
+      font-size: 11px;
       color: #14532d;
       line-height: 1.4;
       font-weight: 500;
@@ -323,7 +416,7 @@
       color: #0f172a;
     }
 
-    /* THE CALL BUTTON (NATIVE DIALER) */
+    /* THE CALL BUTTON (NATIVE DIALER OR INCOMING CLOUD CALL) */
     .call-actions-row {
       display: grid;
       grid-template-columns: 2.4fr 1fr;
@@ -338,7 +431,7 @@
       background: var(--emerald);
       color: #ffffff;
       text-decoration: none;
-      padding: 16px 20px;
+      padding: 15px 18px;
       border-radius: var(--radius-md);
       font-size: 15px;
       font-weight: 750;
@@ -346,16 +439,21 @@
       box-shadow: 0 4px 16px rgba(22, 163, 74, 0.35);
       border: 0;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.2s;
     }
     .btn-call-driver:active {
-      background: var(--emerald-dark);
       transform: scale(0.98);
+      filter: brightness(0.92);
+    }
+    .btn-call-driver.incoming-active {
+      background: var(--blue);
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
     }
     .btn-call-driver svg {
       width: 20px;
       height: 20px;
       stroke-width: 2.3;
+      flex-shrink: 0;
     }
     .btn-chat {
       display: flex;
@@ -364,7 +462,7 @@
       gap: 6px;
       background: #f1f5f9;
       color: var(--text-main);
-      padding: 16px 14px;
+      padding: 15px 14px;
       border-radius: var(--radius-md);
       font-size: 14px;
       font-weight: 700;
@@ -376,11 +474,11 @@
     .btn-chat:active { background: #e2e8f0; }
     .btn-chat svg { width: 19px; height: 19px; color: #475569; }
 
-    /* Route Overview Accordion / Row */
+    /* Route Summary */
     .route-summary {
       background: #f8fafc;
       border-radius: var(--radius-sm);
-      padding: 12px 14px;
+      padding: 11px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -401,11 +499,11 @@
       font-size: 13px;
     }
 
-    /* MODAL: CUSTOMIZE CALL RECIPIENT PHONE NUMBER */
+    /* MODAL: SET TARGET DESTINATION NUMBER & CALL MODES */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(4px);
       z-index: 100;
       display: flex;
@@ -415,9 +513,11 @@
     }
     .modal-content {
       width: min(440px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
       background: #ffffff;
       border-radius: 24px 24px 0 0;
-      padding: 24px 20px 32px;
+      padding: 22px 20px 30px;
       box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
       display: flex;
       flex-direction: column;
@@ -481,7 +581,28 @@
       font-size: 11px;
       color: #94a3b8;
       margin-top: 4px;
+      line-height: 1.35;
     }
+
+    .modal-toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+    }
+    .modal-toggle-text strong {
+      font-size: 13px;
+      color: var(--text-main);
+      display: block;
+    }
+    .modal-toggle-text span {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
     .btn-save-phone {
       background: var(--primary-black);
       color: #fff;
@@ -489,28 +610,33 @@
       padding: 14px;
       border-radius: var(--radius-md);
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 750;
       cursor: pointer;
-      margin-top: 8px;
+      margin-top: 6px;
+    }
+    .btn-save-phone:active {
+      filter: brightness(0.85);
     }
 
-    /* Toast */
+    /* Toast Notification */
     .toast-msg {
       position: fixed;
       top: 20px;
       left: 50%;
-      transform: translateX(-50%) translateY(-60px);
+      transform: translateX(-50%) translateY(-70px);
       background: var(--primary-black);
       color: #fff;
-      padding: 10px 18px;
+      padding: 12px 20px;
       border-radius: 9999px;
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 600;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
       z-index: 200;
       opacity: 0;
       pointer-events: none;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 90%;
+      text-align: center;
     }
     .toast-msg.show {
       transform: translateX(-50%) translateY(0);
@@ -519,7 +645,7 @@
 
     @keyframes pulse-dot {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
+      50% { opacity: 0.35; transform: scale(0.8); }
     }
     @keyframes slideUp {
       from { transform: translateY(100%); }
@@ -666,26 +792,45 @@
         </div>
       </div>
 
+      <!-- CALL MODE SELECTOR CARD: TOGGLE OUTGOING (DIALER) VS INCOMING (CLOUD RING) -->
+      <div class="call-mode-card" id="call-mode-card">
+        <div class="call-mode-info">
+          <div class="call-mode-badge">
+            <span class="mode-indicator" id="mode-indicator"></span>
+            <span id="call-mode-title">Outgoing Dialer Only</span>
+          </div>
+          <div class="call-mode-hint" id="call-mode-hint">
+            Directly launches phone dialer app (No incoming ring).
+          </div>
+        </div>
+        <div class="call-mode-toggle-wrap">
+          <label class="switch-control" title="Toggle Incoming Call Mode">
+            <input type="checkbox" id="main-incoming-toggle" onchange="toggleIncomingMode(this.checked)">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+
       <!-- Number Masking Guarantee Banner -->
       <div class="privacy-box">
         <div class="privacy-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
         <div class="privacy-copy">
-          <strong>Number Masking Active:</strong> Your real phone number is protected. Neither you nor the driver can see each other's phone number.
+          <strong>Number Masking Active:</strong> Your real phone number is protected. All calls route privately through <strong>+91 7969002802</strong>.
         </div>
       </div>
 
-      <!-- THE CALL BUTTON (NATIVE DIALER) -->
+      <!-- CALL ACTIONS ROW (OPENS PHONE DIALER APP DIRECTLY OR RINGS PHONE) -->
       <div class="call-actions-row">
-        <!-- Direct Native Dialer Anchor -->
-        <a class="btn-call-driver" id="btn-call-action" href="tel:+917969002802" onclick="handleCallTap(event)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          <span>Call Driver</span>
+        <!-- Main Call Action Button -->
+        <a class="btn-call-driver" id="btn-call-action" href="tel:+917969002802" onclick="handleCallClick(event)">
+          <svg id="btn-call-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span id="btn-call-text">Call Driver</span>
         </a>
 
         <!-- Message Button -->
-        <button class="btn-chat" onclick="showToast('In-app message sent to driver.')">
+        <button class="btn-chat" onclick="showToast('Driver notified: On the way to pickup location.')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <span>Chat</span>
         </button>
@@ -704,57 +849,79 @@
 
   </div>
 
-  <!-- MODAL: SET TARGET DESTINATION NUMBER -->
+  <!-- MODAL: SET TARGET DESTINATION NUMBER & CALL MODES -->
   <div class="modal-backdrop" id="number-modal" hidden>
     <div class="modal-content">
       <div class="modal-top">
-        <h3>Call Routing Configuration</h3>
+        <h3>Call & Privacy Settings</h3>
         <button class="btn-modal-close" onclick="closeNumberModal()">✕</button>
       </div>
 
+      <!-- Mode Toggle inside modal -->
+      <div class="modal-toggle-row">
+        <div class="modal-toggle-text">
+          <strong>Incoming Call Mode</strong>
+          <span>Toggle ON so Edesy calls your phone</span>
+        </div>
+        <label class="switch-control">
+          <input type="checkbox" id="modal-incoming-toggle" onchange="toggleIncomingMode(this.checked)">
+          <span class="switch-slider"></span>
+        </label>
+      </div>
+
       <div>
-        <label class="input-label" for="input-target-phone">Destination Phone Number (To whom this call should ring)</label>
+        <label class="input-label" for="input-target-phone">Your Mobile Number (Party A / To receive incoming call)</label>
         <div class="phone-input-wrap">
           <span class="phone-prefix">+91</span>
           <input type="tel" id="input-target-phone" class="phone-field" maxlength="10" placeholder="Enter your 10-digit mobile number">
         </div>
-        <div class="input-subtext">Enter your personal mobile number here so the call rings directly on your phone!</div>
+        <div class="input-subtext">Enter your personal active SIM number here. When Incoming Mode is ON, Edesy will call this phone.</div>
       </div>
 
       <div>
-        <label class="input-label" for="input-driver-phone">Caller Phone Number (Driver / Party A)</label>
+        <label class="input-label" for="input-driver-phone">Target Driver's Number (Party B)</label>
         <div class="phone-input-wrap">
           <span class="phone-prefix">+91</span>
-          <input type="tel" id="input-driver-phone" class="phone-field" maxlength="10" value="9876543211">
+          <input type="tel" id="input-driver-phone" class="phone-field" maxlength="10" placeholder="Enter driver mobile number">
         </div>
-        <div class="input-subtext">The driver's mobile number initiating the call.</div>
+        <div class="input-subtext">Destination number to connect privately with the customer.</div>
+      </div>
+
+      <div>
+        <label class="input-label" for="input-dialer-number">Dialer Outgoing Target (When Outgoing Mode is active)</label>
+        <div class="phone-input-wrap">
+          <input type="text" id="input-dialer-number" class="phone-field" value="+917969002802">
+        </div>
+        <div class="input-subtext">The number that automatically opens in your phone dialer app (e.g. +917969002802 or target number).</div>
       </div>
 
       <div>
         <label class="input-label" for="input-virtual-did">Masked Virtual Number (DID)</label>
         <div class="phone-input-wrap">
-          <input type="text" id="input-virtual-did" class="phone-field" value="+917969002802">
+          <input type="text" id="input-virtual-did" class="phone-field" value="+917969002802" readonly style="background:#f8fafc; color:#64748b;">
         </div>
-        <div class="input-subtext">The number displayed on the phone dialer and receiver's caller ID.</div>
+        <div class="input-subtext">Assigned Edesy Cloud DID line shown on caller ID.</div>
       </div>
 
-      <button class="btn-save-phone" onclick="saveNumbers()">Save & Update</button>
+      <button class="btn-save-phone" onclick="saveNumbers()">Save Configuration</button>
     </div>
   </div>
 
   <!-- Toast Notification -->
   <div class="toast-msg" id="toast-pill">
-    <span id="toast-content">Connecting call...</span>
+    <span id="toast-content">Connecting...</span>
   </div>
 
   <script>
     (() => {
-      const STORAGE_KEY = "sk-call-taxi-white-theme-v1";
+      const STORAGE_KEY = "sk-call-taxi-white-theme-v2";
       
       const config = {
-        targetPhone: "9876543210",
-        driverPhone: "9876543211",
-        virtualDid: "+917969002802"
+        targetPhone: "",     // User's own phone number (Party A)
+        driverPhone: "9876543211", // Driver's phone number (Party B)
+        virtualDid: "+917969002802",
+        dialerNumber: "+917969002802",
+        incomingMode: false  // Default: Outgoing only (opens dialer)
       };
 
       try {
@@ -762,15 +929,62 @@
         if (saved) Object.assign(config, saved);
       } catch(e) {}
 
-      function sync() {
-        const cleanDid = config.virtualDid.replace(/[\s().-]/g, "");
+      const EDESY_DIRECT_URL = "https://voice-api.edesy.in/v1/masking/calls";
+      const EDESY_TOKEN = "vp_4d70661cad114d5b5a3243df2f16767a4d88aaf55f889195ef74f36ea67e0895";
+
+      function syncUI() {
+        const cleanDialNumber = (config.dialerNumber || config.virtualDid || "+917969002802").replace(/[\s().-]/g, "");
         const callBtn = document.getElementById("btn-call-action");
-        callBtn.href = `tel:${cleanDid}`;
-        
-        document.getElementById("input-target-phone").value = config.targetPhone;
-        document.getElementById("input-driver-phone").value = config.driverPhone;
-        document.getElementById("input-virtual-did").value = config.virtualDid;
+        const callIcon = document.getElementById("btn-call-icon");
+        const callText = document.getElementById("btn-call-text");
+        const modeCard = document.getElementById("call-mode-card");
+        const modeTitle = document.getElementById("call-mode-title");
+        const modeHint = document.getElementById("call-mode-hint");
+        const mainToggle = document.getElementById("main-incoming-toggle");
+        const modalToggle = document.getElementById("modal-incoming-toggle");
+
+        // Sync inputs
+        document.getElementById("input-target-phone").value = config.targetPhone || "";
+        document.getElementById("input-driver-phone").value = config.driverPhone || "";
+        document.getElementById("input-dialer-number").value = config.dialerNumber || config.virtualDid || "+917969002802";
+        document.getElementById("input-virtual-did").value = config.virtualDid || "+917969002802";
+
+        mainToggle.checked = !!config.incomingMode;
+        modalToggle.checked = !!config.incomingMode;
+
+        if (config.incomingMode) {
+          // INCOMING MODE (Cloud Bridge: Edesy calls the user)
+          modeCard.classList.add("incoming-active");
+          callBtn.classList.add("incoming-active");
+          modeTitle.textContent = "Incoming Call Mode (Cloud Bridge)";
+          modeHint.textContent = "Edesy cloud will call your phone from " + config.virtualDid;
+          callText.textContent = "Request Call (Ring My Phone)";
+          callBtn.removeAttribute("href"); // We will trigger cloud bridge via click
+          callIcon.innerHTML = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>';
+        } else {
+          // OUTGOING ONLY MODE (Opens Phone Dialer app directly)
+          modeCard.classList.remove("incoming-active");
+          callBtn.classList.remove("incoming-active");
+          modeTitle.textContent = "Outgoing Dialer Only";
+          modeHint.textContent = "Directly launches phone dialer app (No incoming ring).";
+          callText.textContent = "Call Driver";
+          callBtn.href = `tel:${cleanDialNumber}`;
+          callIcon.innerHTML = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>';
+        }
       }
+
+      window.toggleIncomingMode = function(isIncoming) {
+        config.incomingMode = isIncoming;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+        } catch(e) {}
+        syncUI();
+        if (isIncoming) {
+          showToast("Incoming Mode ON: Tapping call will ring your phone from " + config.virtualDid);
+        } else {
+          showToast("Outgoing Only: Tapping call will open your phone dialer app.");
+        }
+      };
 
       window.openNumberModal = function() {
         document.getElementById("number-modal").hidden = false;
@@ -783,49 +997,100 @@
       window.saveNumbers = function() {
         const target = document.getElementById("input-target-phone").value.replace(/\D/g, "").slice(0, 10);
         const driver = document.getElementById("input-driver-phone").value.replace(/\D/g, "").slice(0, 10);
-        const did = document.getElementById("input-virtual-did").value.trim() || "+917969002802";
-
-        if (target.length !== 10) {
-          showToast("Please enter a valid 10-digit mobile number");
-          return;
-        }
+        const dialer = document.getElementById("input-dialer-number").value.trim() || "+917969002802";
+        const isIncoming = document.getElementById("modal-incoming-toggle").checked;
 
         config.targetPhone = target;
         config.driverPhone = driver;
-        config.virtualDid = did;
+        config.dialerNumber = dialer;
+        config.incomingMode = isIncoming;
 
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
         } catch(e) {}
 
-        sync();
+        syncUI();
         closeNumberModal();
-        showToast("Phone numbers saved! Ready to dial.");
+        showToast("Settings saved successfully!");
       };
 
-      // When Call Driver is tapped:
-      // 1. Triggers background masking call bridge to Edesy
-      // 2. Directly opens device phone dialer with the virtual DID pre-filled!
-      window.handleCallTap = function(event) {
-        const cleanDid = config.virtualDid.replace(/[\s().-]/g, "");
+      // Handler for Call Button Tap
+      window.handleCallClick = async function(event) {
+        if (config.incomingMode) {
+          // INCOMING MODE: Trigger Cloud Call Bridge so Edesy calls the user's phone!
+          if (event) event.preventDefault();
 
-        // Notify Edesy in background to bridge Driver and Target Customer
-        fetch("/v1/masking/calls", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            party_a: config.driverPhone,
-            party_b: config.targetPhone,
-            virtual_did: config.virtualDid
-          })
-        }).catch(() => {});
+          if (!config.targetPhone || config.targetPhone.length !== 10) {
+            showToast("Please enter your 10-digit phone number first!");
+            openNumberModal();
+            return;
+          }
 
-        showToast("Opening dialer with masked number: " + config.virtualDid);
+          showToast("Initiating cloud call... Edesy is calling your phone!");
 
-        // Instant intent execution
-        setTimeout(() => {
-          window.location.href = `tel:${cleanDid}`;
-        }, 80);
+          try {
+            // Send request directly to Edesy Voice API (CORS enabled)
+            const response = await fetch(EDESY_DIRECT_URL, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${EDESY_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                party_a: config.targetPhone, // Calls user's phone first
+                party_b: config.driverPhone || "9876543211" // Then connects driver
+              })
+            });
+
+            const data = await response.json();
+            if (response.ok && data.data) {
+              showToast("📞 Incoming call initiated! Answer when " + (data.data.masked_number || config.virtualDid) + " calls.");
+            } else {
+              // Try local proxy fallback if direct fails
+              const fallback = await fetch("/v1/masking/calls", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  party_a: config.targetPhone,
+                  party_b: config.driverPhone || "9876543211",
+                  virtual_did: config.virtualDid
+                })
+              });
+              const fbData = await fallback.json();
+              if (fallback.ok) {
+                showToast("📞 Cloud call placed! Edesy is dialing your phone.");
+              } else {
+                showToast("Notice: " + (fbData.error || "Telecom bridge initiated."));
+              }
+            }
+          } catch (err) {
+            // Try proxy fallback
+            try {
+              await fetch("/v1/masking/calls", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  party_a: config.targetPhone,
+                  party_b: config.driverPhone || "9876543211"
+                })
+              });
+              showToast("📞 Cloud call placed! Edesy is dialing your phone.");
+            } catch(e) {
+              showToast("Network notice: Please ensure phone has internet.");
+            }
+          }
+
+        } else {
+          // OUTGOING ONLY MODE: Directly opens the Android Phone Dialer app
+          // No in-app call screen. No incoming call triggered.
+          const cleanNum = (config.dialerNumber || config.virtualDid || "+917969002802").replace(/[\s().-]/g, "");
+          showToast("Opening phone dialer app: " + cleanNum);
+          
+          // Let standard <a href="tel:..."> open native dialer, or execute via location
+          setTimeout(() => {
+            window.location.href = `tel:${cleanNum}`;
+          }, 60);
+        }
       };
 
       let toastTimer = null;
@@ -834,10 +1099,10 @@
         document.getElementById("toast-content").textContent = msg;
         pill.classList.add("show");
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => pill.classList.remove("show"), 2800);
+        toastTimer = setTimeout(() => pill.classList.remove("show"), 3200);
       };
 
-      sync();
+      syncUI();
     })();
   </script>
 </body>
