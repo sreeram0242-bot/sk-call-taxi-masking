@@ -921,14 +921,14 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = "sk-call-taxi-white-theme-v9";
+      const STORAGE_KEY = "sk-call-taxi-white-theme-v10";
       
       const config = {
         targetPhone: "9629661668",  // Phone 1 (Passenger/Caller)
         driverPhone: "7871580261",  // Phone 2 (Driver/Target)
         virtualDid: "+917969002802",
         dialerNumber: "+917969002802",
-        incomingMode: true         // Default: Outgoing only (opens dialer)
+        incomingMode: false        // Default: Outgoing only (opens phone dialer app)
       };
 
       try {
@@ -1035,15 +1035,14 @@
       window.handleCallClick = async function(event) {
         if (event) event.preventDefault();
 
-        // Check if user specifically switched to Direct Dialer Mode
+        // OUTGOING DIALER MODE: Takes user directly to their Android/iOS phone dialer app!
         if (!config.incomingMode) {
-          const dialNum = (config.dialerNumber || config.driverPhone || "").replace(/[\s().-]/g, "");
-          if (dialNum && dialNum !== config.virtualDid.replace(/[\s().-]/g, "")) {
-            showToast("Opening phone dialer for Driver: " + dialNum);
-            setTimeout(() => { window.location.href = "tel:" + dialNum; }, 80);
-            return;
-          }
-          showToast("Notice: Virtual DID +91 7969002802 requires Cloud Call. Initiating...");
+          const dialNum = (config.dialerNumber || config.virtualDid || "+917969002802").replace(/[\s().-]/g, "");
+          showToast("Opening Phone Dialer: " + dialNum);
+          setTimeout(() => {
+            window.location.href = "tel:" + dialNum;
+          }, 80);
+          return;
         }
 
         const num1 = config.targetPhone || "9629661668";
