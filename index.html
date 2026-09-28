@@ -3,922 +3,841 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0b0f19">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>SK Partner · Driver App</title>
+  <meta name="theme-color" content="#ffffff">
+  <title>SK Cabs · Ride Confirmed</title>
   
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg: #0b0f19;
-      --card-bg: rgba(18, 26, 43, 0.95);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary: #f59e0b;
-      --primary-glow: rgba(245, 158, 11, 0.25);
-      --emerald: #10b981;
-      --emerald-dark: #059669;
-      --emerald-glow: rgba(16, 185, 129, 0.35);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-faint: #64748b;
-      --line: rgba(255, 255, 255, 0.08);
-      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bg-white: #ffffff;
+      --surface: #f8fafc;
+      --card-border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --primary-black: #111827;
+      --emerald: #16a34a;
+      --emerald-dark: #15803d;
+      --emerald-light: #f0fdf4;
+      --emerald-border: #bbf7d0;
+      --amber: #f59e0b;
+      --blue: #2563eb;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
-      --radius-sm: 10px;
-      --radius-md: 16px;
-      --radius-lg: 22px;
-      --radius-full: 9999px;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 24px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     [hidden] { display: none !important; }
 
     body {
-      background-color: var(--bg);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 50%);
-      color: var(--text);
-      font-family: var(--font-sans);
+      background-color: #f1f5f9;
+      color: var(--text-main);
+      font-family: var(--font);
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
       user-select: none;
     }
 
-    /* Native App Container */
-    .app-shell {
-      width: min(480px, 100%);
-      margin: 0 auto;
+    /* Mobile Container Frame */
+    .app-screen {
+      width: min(440px, 100%);
       min-height: 100vh;
+      background: var(--bg-white);
+      position: relative;
       display: flex;
       flex-direction: column;
-      position: relative;
-      background: var(--bg);
-      border-left: 1px solid rgba(255,255,255,0.03);
-      border-right: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
     }
 
-    /* App Header Bar */
-    .app-header {
-      padding: 16px 20px;
-      background: rgba(11, 15, 25, 0.95);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--line);
-      position: sticky;
-      top: 0;
-      z-index: 50;
+    /* MAP SECTION (Full Light Mode Google/Ola Style Map) */
+    .map-section {
+      height: 52vh;
+      min-height: 320px;
+      position: relative;
+      background: #e5e9ec;
+      overflow: hidden;
+    }
+    .map-svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Floating Header on Map */
+    .map-header {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      z-index: 10;
     }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .driver-avatar {
+    .btn-circle {
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border: 2px solid var(--primary);
+      background: var(--bg-white);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      color: var(--text-main);
       display: grid;
       place-items: center;
-      font-weight: 800;
-      font-size: 15px;
-      color: var(--primary);
-      box-shadow: 0 0 12px var(--primary-glow);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      transition: transform 0.15s;
     }
-    .header-info h1 {
-      font-size: 15px;
-      font-weight: 800;
+    .btn-circle:active { transform: scale(0.92); }
+    .btn-circle svg { width: 20px; height: 20px; stroke-width: 2.2; }
+    
+    .ride-id-pill {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
       color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    .online-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: #34d399;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-    }
-    .dot-pulse {
+    .live-dot {
       width: 7px;
       height: 7px;
       background: var(--emerald);
       border-radius: 50%;
-      box-shadow: 0 0 8px var(--emerald);
-      animation: pulse-glow 2s infinite;
+      box-shadow: 0 0 6px var(--emerald);
+      animation: pulse-dot 1.8s infinite;
     }
-    .header-right {
+
+    /* Map Overlay Floating Tags */
+    .map-badge {
+      position: absolute;
+      background: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-main);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
+      border: 1px solid #e2e8f0;
+      z-index: 5;
     }
-    .earnings-badge {
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 6px 10px;
-      border-radius: var(--radius-sm);
-      text-align: right;
-    }
-    .earnings-val {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--primary);
-      font-family: var(--font-mono);
-    }
-    .earnings-lbl {
-      font-size: 9px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-    .btn-settings {
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--line);
-      color: var(--text-muted);
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-settings:active { transform: scale(0.92); }
-    .btn-settings svg { width: 18px; height: 18px; }
+    .map-badge.pickup { top: 78px; left: 24px; }
+    .map-badge.drop { top: 220px; right: 24px; }
+    .badge-dot-green { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); }
+    .badge-dot-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
 
-    /* Main Scrollable Content */
-    .app-body {
+    /* Animated Taxi on Map */
+    .taxi-vehicle {
+      animation: drive-along 18s infinite linear;
+    }
+
+    /* BOTTOM SHEET (100% Authenticity Call Taxi Card) */
+    .booking-sheet {
       flex: 1;
-      padding: 16px 18px 90px;
+      background: var(--bg-white);
+      border-radius: 28px 28px 0 0;
+      margin-top: -24px;
+      position: relative;
+      z-index: 20;
+      padding: 16px 20px 24px;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
       display: flex;
       flex-direction: column;
       gap: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .sheet-handle {
+      width: 44px;
+      height: 4px;
+      background: #cbd5e1;
+      border-radius: 2px;
+      margin: 0 auto 4px;
     }
 
-    /* Live Trip Status Card */
-    .trip-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 18px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .trip-status-header {
+    /* ETA / Arrival Status Row */
+    .eta-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--line);
     }
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
+    .eta-info h2 {
+      font-size: 19px;
       font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      color: #34d399;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      padding: 5px 12px;
-      border-radius: var(--radius-full);
+      color: var(--text-main);
+      letter-spacing: -0.4px;
     }
-    .trip-fare-box {
-      text-align: right;
-    }
-    .fare-number {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    .fare-sub {
-      font-size: 10px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    /* Route Visualizer */
-    .route-container {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      position: relative;
-    }
-    .route-stop {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .stop-indicator {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 3px;
-    }
-    .dot-green {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--emerald);
-      box-shadow: 0 0 10px var(--emerald);
-    }
-    .stop-line {
-      width: 2px;
-      height: 36px;
-      background: linear-gradient(to bottom, var(--emerald), var(--primary));
-      margin: 4px 0;
-    }
-    .dot-amber {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--primary);
-      box-shadow: 0 0 10px var(--primary);
-    }
-    .stop-details h3 {
-      font-size: 14px;
-      font-weight: 750;
-      color: #fff;
-      line-height: 1.3;
-    }
-    .stop-details p {
-      font-size: 11px;
+    .eta-info p {
+      font-size: 13px;
       color: var(--text-muted);
       margin-top: 2px;
+      font-weight: 500;
+    }
+    .otp-badge {
+      background: #f8fafc;
+      border: 1.5px dashed #94a3b8;
+      border-radius: 10px;
+      padding: 6px 10px;
+      text-align: center;
+    }
+    .otp-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    .otp-num {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary-black);
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
     }
 
-    /* Passenger Profile Card */
-    .passenger-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--line);
+    /* Driver & Vehicle Details Card */
+    .driver-card {
+      background: #f8fafc;
+      border: 1px solid var(--card-border);
       border-radius: var(--radius-md);
       padding: 14px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .passenger-info {
+    .driver-left {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    .passenger-avatar {
-      width: 44px;
-      height: 44px;
+    .driver-photo {
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      background: #e2e8f0;
       display: grid;
       place-items: center;
+      font-size: 17px;
       font-weight: 800;
-      font-size: 15px;
-      color: #fff;
+      color: #334155;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      position: relative;
     }
-    .passenger-name-wrap h4 {
-      font-size: 15px;
-      font-weight: 750;
-      color: #fff;
-    }
-    .passenger-rating {
-      font-size: 11px;
-      color: var(--text-muted);
+    .driver-badge-star {
+      position: absolute;
+      bottom: -3px;
+      right: -3px;
+      background: var(--amber);
+      color: #000;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
-      gap: 4px;
-      margin-top: 2px;
+      gap: 1px;
     }
-    .star { color: #f59e0b; }
-    .btn-edit-target {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--line);
+    .driver-text h3 {
+      font-size: 15px;
+      font-weight: 750;
+      color: var(--text-main);
+    }
+    .driver-text p {
+      font-size: 12px;
       color: var(--text-muted);
-      padding: 6px 10px;
-      border-radius: 8px;
+      margin-top: 1px;
+    }
+
+    .vehicle-right {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .license-plate {
+      background: #fef08a; /* Indian yellow transport plate */
+      border: 1.5px solid #ca8a04;
+      color: #000;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .vehicle-model {
       font-size: 11px;
       font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .btn-edit-target:active { background: rgba(255,255,255,0.12); }
-
-    /* Number Masking Shield Notice */
-    .shield-notice {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(15, 23, 42, 0.5));
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .shield-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: rgba(16, 185, 129, 0.2);
-      display: grid;
-      place-items: center;
-      color: #34d399;
-      flex: none;
-    }
-    .shield-icon svg { width: 18px; height: 18px; }
-    .shield-text h5 {
-      font-size: 12px;
-      font-weight: 750;
-      color: #34d399;
-    }
-    .shield-text p {
-      font-size: 11px;
-      color: #cbd5e1;
-      margin-top: 2px;
-    }
-    .masked-preview {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    /* THE CALL BUTTON (NATIVE DIALER ANCHOR) */
-    .call-action-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .btn-native-dial {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: #fff;
-      text-decoration: none;
-      padding: 18px 24px;
-      border-radius: var(--radius-md);
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      box-shadow: 0 8px 25px var(--emerald-glow);
-      border: 0;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      width: 100%;
-    }
-    .btn-native-dial:active {
-      transform: scale(0.97);
-      background: linear-gradient(135deg, #059669, #047857);
-    }
-    .btn-native-dial svg {
-      width: 24px;
-      height: 24px;
-      animation: phone-shake 2.2s infinite ease-in-out;
-    }
-    .call-btn-caption {
-      text-align: center;
-      font-size: 11px;
-      color: var(--text-faint);
-    }
-    .call-btn-caption strong {
-      color: #cbd5e1;
-      font-family: var(--font-mono);
-    }
-
-    /* Secondary Navigation & Chat Buttons */
-    .trip-quick-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .btn-quick {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-    .btn-quick:active { background: rgba(255,255,255,0.12); }
-    .btn-quick svg { width: 17px; height: 17px; color: var(--primary); }
-
-    /* Ride Stage Progression */
-    .stage-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 16px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .stage-title {
-      font-size: 12px;
-      font-weight: 750;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
       color: var(--text-muted);
     }
-    .btn-stage {
-      padding: 14px;
+
+    /* Privacy Banner */
+    .privacy-box {
+      background: var(--emerald-light);
+      border: 1px solid var(--emerald-border);
       border-radius: var(--radius-md);
-      border: 1px solid var(--primary);
-      background: rgba(245, 158, 11, 0.12);
-      color: var(--primary);
-      font-size: 14px;
-      font-weight: 750;
-      cursor: pointer;
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .privacy-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #dcfce7;
+      color: var(--emerald);
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+    .privacy-icon svg { width: 15px; height: 15px; stroke-width: 2.2; }
+    .privacy-copy {
+      font-size: 11.5px;
+      color: #14532d;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+    .privacy-copy strong {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* THE CALL BUTTON (NATIVE DIALER) */
+    .call-actions-row {
+      display: grid;
+      grid-template-columns: 2.4fr 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn-call-driver {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
+      gap: 10px;
+      background: var(--emerald);
+      color: #ffffff;
+      text-decoration: none;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 750;
+      letter-spacing: 0.2px;
+      box-shadow: 0 4px 16px rgba(22, 163, 74, 0.35);
+      border: 0;
+      cursor: pointer;
+      transition: all 0.15s;
     }
-    .btn-stage:active {
-      background: var(--primary);
-      color: #000;
+    .btn-call-driver:active {
+      background: var(--emerald-dark);
+      transform: scale(0.98);
+    }
+    .btn-call-driver svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2.3;
+    }
+    .btn-chat {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #f1f5f9;
+      color: var(--text-main);
+      padding: 16px 14px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-chat:active { background: #e2e8f0; }
+    .btn-chat svg { width: 19px; height: 19px; color: #475569; }
+
+    /* Route Overview Accordion / Row */
+    .route-summary {
+      background: #f8fafc;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      border: 1px solid #edf2f7;
+    }
+    .route-text {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .route-fare {
+      font-weight: 800;
+      color: var(--text-main);
+      font-size: 13px;
     }
 
-    /* Target Phone Number Settings Modal */
-    .modal-overlay {
+    /* MODAL: CUSTOMIZE CALL RECIPIENT PHONE NUMBER */
+    .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.82);
-      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
       z-index: 100;
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: fadeIn 0.2s ease;
     }
-    .modal-sheet {
-      width: min(480px, 100%);
-      background: #0f172a;
-      border-top: 1px solid var(--card-border);
-      border-radius: 28px 28px 0 0;
-      padding: 24px 22px 34px;
+    .modal-content {
+      width: min(440px, 100%);
+      background: #ffffff;
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px 32px;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
       display: flex;
       flex-direction: column;
-      gap: 18px;
-      box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.6);
+      gap: 16px;
+      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .modal-head {
+    .modal-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
     }
-    .modal-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: #fff;
-    }
-    .btn-close {
+    .modal-top h3 { font-size: 16px; font-weight: 800; color: var(--text-main); }
+    .btn-modal-close {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.08);
       border: 0;
-      color: #fff;
-      display: grid;
-      place-items: center;
+      background: #f1f5f9;
+      color: #64748b;
+      font-weight: 700;
       cursor: pointer;
     }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .form-label {
+    .input-label {
       font-size: 12px;
       font-weight: 700;
       color: var(--text-muted);
+      margin-bottom: 6px;
+      display: block;
     }
-    .input-wrap {
+    .phone-input-wrap {
       display: flex;
       align-items: center;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
       height: 48px;
       padding: 0 12px;
+      background: #fff;
     }
-    .input-prefix {
-      font-size: 13px;
+    .phone-input-wrap:focus-within {
+      border-color: var(--emerald);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+    }
+    .phone-prefix {
+      font-size: 14px;
       font-weight: 700;
-      color: var(--primary);
+      color: #475569;
       margin-right: 8px;
     }
-    .text-input {
-      background: transparent;
+    .phone-field {
+      width: 100%;
       border: 0;
-      color: #fff;
-      font-size: 14px;
-      font-family: var(--font-mono);
-      font-weight: 600;
       outline: none;
-      width: 100%;
-    }
-    .field-hint {
-      font-size: 11px;
-      color: var(--text-faint);
-    }
-    .btn-save-settings {
-      background: var(--primary);
-      color: #000;
-      border: 0;
-      padding: 15px;
-      border-radius: var(--radius-md);
       font-size: 15px;
-      font-weight: 800;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .input-subtext {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .btn-save-phone {
+      background: var(--primary-black);
+      color: #fff;
+      border: 0;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
-      width: 100%;
       margin-top: 8px;
     }
-    .btn-save-settings:active { opacity: 0.9; }
 
-    /* Toast Notification */
-    .toast-pill {
+    /* Toast */
+    .toast-msg {
       position: fixed;
-      top: 24px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(-60px);
-      background: #1e293b;
-      border: 1px solid var(--emerald);
+      background: var(--primary-black);
       color: #fff;
       padding: 10px 18px;
-      border-radius: var(--radius-full);
+      border-radius: 9999px;
       font-size: 12px;
-      font-weight: 700;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
       z-index: 200;
       opacity: 0;
       pointer-events: none;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
-    .toast-pill.show {
+    .toast-msg.show {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
     }
 
-    @keyframes phone-shake {
-      0%, 100% { transform: rotate(0deg); }
-      15% { transform: rotate(-14deg); }
-      30% { transform: rotate(14deg); }
-      45% { transform: rotate(-8deg); }
-      60% { transform: rotate(8deg); }
-      75% { transform: rotate(0deg); }
-    }
-    @keyframes pulse-glow {
+    @keyframes pulse-dot {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(0.85); }
     }
-    @keyframes slide-up {
+    @keyframes slideUp {
       from { transform: translateY(100%); }
       to { transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes drive-along {
+      0% { transform: translate(110px, 95px) rotate(35deg); }
+      30% { transform: translate(210px, 145px) rotate(42deg); }
+      70% { transform: translate(320px, 200px) rotate(28deg); }
+      100% { transform: translate(110px, 95px) rotate(35deg); }
     }
   </style>
 </head>
 <body>
 
-  <div class="app-shell">
+  <div class="app-screen">
 
-    <!-- Top Native Header -->
-    <header class="app-header">
-      <div class="header-left">
-        <div class="driver-avatar">MS</div>
-        <div class="header-info">
-          <h1>Murugan S.</h1>
-          <div class="online-indicator">
-            <span class="dot-pulse"></span>
-            <span>ON DUTY · ONLINE</span>
-          </div>
+    <!-- MAP VIEWPORT (Light Style Clean Google/Ola/Uber Map) -->
+    <div class="map-section">
+      <svg class="map-svg" viewBox="0 0 440 340" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#16a34a"/>
+            <stop offset="100%" stop-color="#2563eb"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Base Land -->
+        <rect width="440" height="340" fill="#f1f5f9"/>
+
+        <!-- City Blocks / Parks -->
+        <path d="M-10 20 L90 10 L120 70 L20 80 Z" fill="#e2e8f0" opacity="0.6"/>
+        <path d="M160 20 L280 15 L290 85 L170 90 Z" fill="#dcfce7" opacity="0.5"/> <!-- Green Park -->
+        <path d="M310 30 L420 20 L440 100 L320 110 Z" fill="#e2e8f0" opacity="0.6"/>
+        <path d="M20 140 L130 130 L140 220 L30 230 Z" fill="#e2e8f0" opacity="0.5"/>
+        <path d="M180 160 L320 140 L340 260 L200 270 Z" fill="#e2e8f0" opacity="0.6"/>
+        <path d="M350 170 L430 160 L450 250 L370 260 Z" fill="#e2e8f0" opacity="0.5"/>
+
+        <!-- Street Grid Lines -->
+        <path d="M-20 70 L460 50" stroke="#ffffff" stroke-width="8" fill="none"/>
+        <path d="M-20 140 L460 120" stroke="#ffffff" stroke-width="12" fill="none"/>
+        <path d="M-20 260 L460 230" stroke="#ffffff" stroke-width="10" fill="none"/>
+        <path d="M80 -20 L90 360" stroke="#ffffff" stroke-width="8" fill="none"/>
+        <path d="M200 -20 L210 360" stroke="#ffffff" stroke-width="14" fill="none"/>
+        <path d="M340 -20 L350 360" stroke="#ffffff" stroke-width="9" fill="none"/>
+
+        <!-- Inner Road Highlights -->
+        <path d="M-20 140 L460 120" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="8 6" fill="none"/>
+        <path d="M200 -20 L210 360" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="8 6" fill="none"/>
+
+        <!-- Active Ride Polyline (Route from Gandhipuram to Airport) -->
+        <path d="M 90 85 Q 160 120 210 145 T 350 230" 
+              stroke="url(#routeGrad)" stroke-width="7" stroke-linecap="round" fill="none" opacity="0.9"/>
+        <path d="M 90 85 Q 160 120 210 145 T 350 230" 
+              stroke="#ffffff" stroke-width="2.5" stroke-dasharray="6 6" fill="none"/>
+
+        <!-- Pickup Pin -->
+        <g transform="translate(90, 85)">
+          <circle r="9" fill="#16a34a" stroke="#ffffff" stroke-width="3"/>
+          <circle r="4" fill="#ffffff"/>
+        </g>
+
+        <!-- Destination Pin -->
+        <g transform="translate(350, 230)">
+          <circle r="9" fill="#ef4444" stroke="#ffffff" stroke-width="3"/>
+          <circle r="4" fill="#ffffff"/>
+        </g>
+
+        <!-- Moving Taxi Marker -->
+        <g class="taxi-vehicle" transform="translate(180, 130)">
+          <circle r="18" fill="#ffffff" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.25))"/>
+          <!-- Taxi Top View Graphic -->
+          <rect x="-7" y="-12" width="14" height="24" rx="4" fill="#111827"/>
+          <rect x="-5" y="-7" width="10" height="5" rx="1" fill="#facc15"/> <!-- Windshield -->
+          <rect x="-5" y="3" width="10" height="4" rx="1" fill="#cbd5e1"/>
+          <!-- Headlights -->
+          <circle cx="-5" cy="-12" r="1.5" fill="#fef08a"/>
+          <circle cx="5" cy="-12" r="1.5" fill="#fef08a"/>
+        </g>
+      </svg>
+
+      <!-- Floating Map Header UI -->
+      <div class="map-header">
+        <button class="btn-circle" onclick="openNumberModal()" title="Trip Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+
+        <div class="ride-id-pill">
+          <span class="live-dot"></span>
+          <span>RIDE #TRIP-4920</span>
         </div>
-      </div>
-      <div class="header-right">
-        <div class="earnings-badge">
-          <div class="earnings-val">₹1,480</div>
-          <div class="earnings-lbl">Today's Fare</div>
-        </div>
-        <button class="btn-settings" onclick="openTargetSettings()" title="Trip Contact Settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
-          </svg>
+
+        <button class="btn-circle" onclick="openNumberModal()" title="Change Calling Numbers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
         </button>
       </div>
-    </header>
 
-    <!-- Main Native Body -->
-    <main class="app-body">
+      <!-- Map Route Badges -->
+      <div class="map-badge pickup">
+        <span class="badge-dot-green"></span>
+        <span>Gandhipuram</span>
+      </div>
+      <div class="map-badge drop">
+        <span class="badge-dot-red"></span>
+        <span>Airport CJB</span>
+      </div>
+    </div>
 
-      <!-- Active Ride Card -->
-      <section class="trip-card">
-        
-        <div class="trip-status-header">
-          <div class="status-badge" id="trip-badge">
-            <span class="dot-pulse"></span>
-            <span id="trip-status-label">Pickup Passenger</span>
+    <!-- WHITE BACKGROUND BOTTOM SHEET (Authentic Call Taxi Screen) -->
+    <div class="booking-sheet">
+      <div class="sheet-handle"></div>
+
+      <!-- Arrival Status + OTP -->
+      <div class="eta-header">
+        <div class="eta-info">
+          <h2>Driver arriving in 3 mins</h2>
+          <p>White Swift Dzire · Sedan</p>
+        </div>
+        <div class="otp-badge">
+          <div class="otp-lbl">START OTP</div>
+          <div class="otp-num">4821</div>
+        </div>
+      </div>
+
+      <!-- Driver Profile Card -->
+      <div class="driver-card">
+        <div class="driver-left">
+          <div class="driver-photo">
+            <span>MS</span>
+            <div class="driver-badge-star">★ 4.9</div>
           </div>
-          <div class="trip-fare-box">
-            <div class="fare-number">₹385</div>
-            <div class="fare-sub">Cash on Drop</div>
+          <div class="driver-text">
+            <h3>Murugan S.</h3>
+            <p>1,248 trips · Verified Partner</p>
           </div>
         </div>
-
-        <!-- Route Indicator -->
-        <div class="route-container">
-          <div class="route-stop">
-            <div class="stop-indicator">
-              <div class="dot-green"></div>
-              <div class="stop-line"></div>
-            </div>
-            <div class="stop-details">
-              <h3 id="display-pickup">Gandhipuram Central Bus Stand</h3>
-              <p>Pickup · 1.8 km away (approx. 4 mins)</p>
-            </div>
-          </div>
-
-          <div class="route-stop">
-            <div class="stop-indicator">
-              <div class="dot-amber"></div>
-            </div>
-            <div class="stop-details">
-              <h3 id="display-drop">Coimbatore International Airport</h3>
-              <p>Destination · Avinashi Road · 12.4 km</p>
-            </div>
-          </div>
+        <div class="vehicle-right">
+          <div class="license-plate">TN 38 BK 4920</div>
+          <div class="vehicle-model">Dzire Tour Sedan</div>
         </div>
+      </div>
 
-        <!-- Passenger Profile Row -->
-        <div class="passenger-card">
-          <div class="passenger-info">
-            <div class="passenger-avatar" id="passenger-avatar">PS</div>
-            <div class="passenger-name-wrap">
-              <h4 id="display-passenger-name">Priya S.</h4>
-              <div class="passenger-rating">
-                <span class="star">★</span> 4.9 · 42 Rides Completed
-              </div>
-            </div>
-          </div>
-          <button class="btn-edit-target" onclick="openTargetSettings()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Change #
-          </button>
+      <!-- Number Masking Guarantee Banner -->
+      <div class="privacy-box">
+        <div class="privacy-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
-
-        <!-- Number Masking Active Banner -->
-        <div class="shield-notice">
-          <div class="shield-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <path d="m9 12 2 2 4-4"/>
-            </svg>
-          </div>
-          <div class="shield-text">
-            <h5>Number Masking Protected</h5>
-            <p>Passenger's personal number is hidden. Calls route through virtual line: <span class="masked-preview" id="display-masked-num">+91 7969002802</span></p>
-          </div>
+        <div class="privacy-copy">
+          <strong>Number Masking Active:</strong> Your real phone number is protected. Neither you nor the driver can see each other's phone number.
         </div>
+      </div>
 
-        <!-- DIRECT PHONE DIALER CALL BUTTON -->
-        <div class="call-action-wrap">
-          <a class="btn-native-dial" id="native-dialer-button" href="tel:+917969002802" onclick="handleCallClick(event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            CALL PASSENGER
-          </a>
-          <div class="call-btn-caption">
-            Tapping opens phone dialer with Virtual DID: <strong id="btn-sub-did">+91 7969002802</strong>
-          </div>
-        </div>
+      <!-- THE CALL BUTTON (NATIVE DIALER) -->
+      <div class="call-actions-row">
+        <!-- Direct Native Dialer Anchor -->
+        <a class="btn-call-driver" id="btn-call-action" href="tel:+917969002802" onclick="handleCallTap(event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span>Call Driver</span>
+        </a>
 
-        <!-- Secondary Actions -->
-        <div class="trip-quick-actions">
-          <a class="btn-quick" href="https://maps.google.com" target="_blank">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-            Navigate GPS
-          </a>
-          <button class="btn-quick" onclick="showToast('In-app message sent: Driver is at pickup.')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            Send Message
-          </button>
-        </div>
-
-      </section>
-
-      <!-- Ride Lifecycle Progression -->
-      <section class="stage-card">
-        <div class="stage-title">Trip Milestones</div>
-        <button class="btn-stage" id="btn-next-stage" onclick="advanceStage()">
-          <span>📍 Mark Arrived at Pickup</span>
+        <!-- Message Button -->
+        <button class="btn-chat" onclick="showToast('In-app message sent to driver.')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Chat</span>
         </button>
-      </section>
+      </div>
 
-    </main>
+      <!-- Route Summary -->
+      <div class="route-summary">
+        <div class="route-text">
+          <span>Gandhipuram ➔ Airport</span>
+          <span>· 12.4 km</span>
+        </div>
+        <div class="route-fare">₹385 (Cash / UPI)</div>
+      </div>
+
+    </div>
 
   </div>
 
-  <!-- TARGET PHONE NUMBER CONFIGURATION MODAL -->
-  <div class="modal-overlay" id="target-modal" hidden>
-    <div class="modal-sheet">
-      <div class="modal-head">
-        <h2 class="modal-title">Trip & Phone Settings</h2>
-        <button class="btn-close" onclick="closeTargetSettings()">✕</button>
+  <!-- MODAL: SET TARGET DESTINATION NUMBER -->
+  <div class="modal-backdrop" id="number-modal" hidden>
+    <div class="modal-content">
+      <div class="modal-top">
+        <h3>Call Routing Configuration</h3>
+        <button class="btn-modal-close" onclick="closeNumberModal()">✕</button>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="cfg-customer-phone">Passenger Phone Number (To whom this call connects)</label>
-        <div class="input-wrap">
-          <span class="input-prefix">+91</span>
-          <input type="tel" id="cfg-customer-phone" class="text-input" value="9876543210" maxlength="10" placeholder="Enter 10-digit number">
+      <div>
+        <label class="input-label" for="input-target-phone">Destination Phone Number (To whom this call should ring)</label>
+        <div class="phone-input-wrap">
+          <span class="phone-prefix">+91</span>
+          <input type="tel" id="input-target-phone" class="phone-field" maxlength="10" placeholder="Enter your 10-digit mobile number">
         </div>
-        <div class="field-hint">Enter your personal phone number here to test receiving the call!</div>
+        <div class="input-subtext">Enter your personal mobile number here so the call rings directly on your phone!</div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="cfg-driver-phone">Driver Phone Number (Caller)</label>
-        <div class="input-wrap">
-          <span class="input-prefix">+91</span>
-          <input type="tel" id="cfg-driver-phone" class="text-input" value="9876543211" maxlength="10">
+      <div>
+        <label class="input-label" for="input-driver-phone">Caller Phone Number (Driver / Party A)</label>
+        <div class="phone-input-wrap">
+          <span class="phone-prefix">+91</span>
+          <input type="tel" id="input-driver-phone" class="phone-field" maxlength="10" value="9876543211">
         </div>
-        <div class="field-hint">Your driver account mobile number.</div>
+        <div class="input-subtext">The driver's mobile number initiating the call.</div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="cfg-masked-did">Masked Virtual Line (DID)</label>
-        <div class="input-wrap">
-          <input type="text" id="cfg-masked-did" class="text-input" value="+917969002802">
+      <div>
+        <label class="input-label" for="input-virtual-did">Masked Virtual Number (DID)</label>
+        <div class="phone-input-wrap">
+          <input type="text" id="input-virtual-did" class="phone-field" value="+917969002802">
         </div>
-        <div class="field-hint">The virtual number dialed on the phone keypad.</div>
+        <div class="input-subtext">The number displayed on the phone dialer and receiver's caller ID.</div>
       </div>
 
-      <button class="btn-save-settings" onclick="saveTargetSettings()">Save & Update Phone Numbers</button>
+      <button class="btn-save-phone" onclick="saveNumbers()">Save & Update</button>
     </div>
   </div>
 
   <!-- Toast Notification -->
-  <div class="toast-pill" id="toast">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399"><polyline points="20 6 9 17 4 12"/></svg>
-    <span id="toast-text">Phone numbers updated</span>
+  <div class="toast-msg" id="toast-pill">
+    <span id="toast-content">Connecting call...</span>
   </div>
 
-  <!-- Application Logic -->
   <script>
     (() => {
-      const STORAGE_KEY = "sk-taxi-partner-store-v3";
+      const STORAGE_KEY = "sk-call-taxi-white-theme-v1";
       
-      const appState = {
-        passengerName: "Priya S.",
-        passengerPhone: "9876543210",
-        driverName: "Murugan S.",
+      const config = {
+        targetPhone: "9876543210",
         driverPhone: "9876543211",
-        virtualDid: "+917969002802",
-        pickup: "Gandhipuram Central Bus Stand",
-        drop: "Coimbatore International Airport",
-        tripStage: 0 // 0: On the way, 1: Arrived, 2: In progress, 3: Completed
+        virtualDid: "+917969002802"
       };
 
-      // Load saved state
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (saved) Object.assign(appState, saved);
-      } catch (e) {}
+        if (saved) Object.assign(config, saved);
+      } catch(e) {}
 
-      function syncUI() {
-        document.getElementById("display-passenger-name").textContent = appState.passengerName;
-        document.getElementById("display-pickup").textContent = appState.pickup;
-        document.getElementById("display-drop").textContent = appState.drop;
-        document.getElementById("display-masked-num").textContent = appState.virtualDid;
-        document.getElementById("btn-sub-did").textContent = appState.virtualDid;
-
-        // Clean number for tel:
-        const cleanDid = appState.virtualDid.replace(/[\s().-]/g, "");
-        const dialerButton = document.getElementById("native-dialer-button");
-        dialerButton.href = `tel:${cleanDid}`;
-
-        // Sync inputs
-        document.getElementById("cfg-customer-phone").value = appState.passengerPhone;
-        document.getElementById("cfg-driver-phone").value = appState.driverPhone;
-        document.getElementById("cfg-masked-did").value = appState.virtualDid;
+      function sync() {
+        const cleanDid = config.virtualDid.replace(/[\s().-]/g, "");
+        const callBtn = document.getElementById("btn-call-action");
+        callBtn.href = `tel:${cleanDid}`;
+        
+        document.getElementById("input-target-phone").value = config.targetPhone;
+        document.getElementById("input-driver-phone").value = config.driverPhone;
+        document.getElementById("input-virtual-did").value = config.virtualDid;
       }
 
-      window.openTargetSettings = function() {
-        document.getElementById("target-modal").hidden = false;
+      window.openNumberModal = function() {
+        document.getElementById("number-modal").hidden = false;
       };
 
-      window.closeTargetSettings = function() {
-        document.getElementById("target-modal").hidden = true;
+      window.closeNumberModal = function() {
+        document.getElementById("number-modal").hidden = true;
       };
 
-      window.saveTargetSettings = function() {
-        const pPhone = document.getElementById("cfg-customer-phone").value.replace(/\D/g, "").slice(0, 10);
-        const dPhone = document.getElementById("cfg-driver-phone").value.replace(/\D/g, "").slice(0, 10);
-        const did = document.getElementById("cfg-masked-did").value.trim() || "+917969002802";
+      window.saveNumbers = function() {
+        const target = document.getElementById("input-target-phone").value.replace(/\D/g, "").slice(0, 10);
+        const driver = document.getElementById("input-driver-phone").value.replace(/\D/g, "").slice(0, 10);
+        const did = document.getElementById("input-virtual-did").value.trim() || "+917969002802";
 
-        if (pPhone.length !== 10) {
-          showToast("Enter a valid 10-digit customer phone number");
+        if (target.length !== 10) {
+          showToast("Please enter a valid 10-digit mobile number");
           return;
         }
 
-        appState.passengerPhone = pPhone;
-        appState.driverPhone = dPhone;
-        appState.virtualDid = did;
+        config.targetPhone = target;
+        config.driverPhone = driver;
+        config.virtualDid = did;
 
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
         } catch(e) {}
 
-        syncUI();
-        closeTargetSettings();
-        showToast("Phone numbers saved! Ready to call.");
+        sync();
+        closeNumberModal();
+        showToast("Phone numbers saved! Ready to dial.");
       };
 
-      // When Call Passenger button is clicked:
-      // 1. Immediately triggers background bridge call to Edesy
-      // 2. Opens native phone dialer with the masked DID directly!
-      window.handleCallClick = function(event) {
-        const cleanDid = appState.virtualDid.replace(/[\s().-]/g, "");
-        
-        // Notify backend / Edesy in background
+      // When Call Driver is tapped:
+      // 1. Triggers background masking call bridge to Edesy
+      // 2. Directly opens device phone dialer with the virtual DID pre-filled!
+      window.handleCallTap = function(event) {
+        const cleanDid = config.virtualDid.replace(/[\s().-]/g, "");
+
+        // Notify Edesy in background to bridge Driver and Target Customer
         fetch("/v1/masking/calls", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            party_a: appState.driverPhone,
-            party_b: appState.passengerPhone,
-            virtual_did: appState.virtualDid
+            party_a: config.driverPhone,
+            party_b: config.targetPhone,
+            virtual_did: config.virtualDid
           })
-        }).catch(() => {
-          // If server offline, ignore error - dialer still opens
-        });
+        }).catch(() => {});
 
-        showToast("Opening Phone Dialer with masked number...");
+        showToast("Opening dialer with masked number: " + config.virtualDid);
 
-        // Ensure dialer opens reliably on all Android webviews
+        // Instant intent execution
         setTimeout(() => {
           window.location.href = `tel:${cleanDid}`;
         }, 80);
       };
 
-      // Trip Milestones
-      const stages = [
-        { label: "📍 Mark Arrived at Pickup", badge: "Pickup Passenger", next: 1 },
-        { label: "🚀 Start Trip (OTP Verified)", badge: "Driver at Pickup", next: 2 },
-        { label: "✅ Complete Trip (Collect ₹385)", badge: "Trip In Progress", next: 3 },
-        { label: "⭐ Trip Completed", badge: "Payment Received", next: 0 }
-      ];
-
-      window.advanceStage = function() {
-        const current = stages[appState.tripStage];
-        appState.tripStage = current.next;
-        const next = stages[appState.tripStage];
-
-        document.getElementById("btn-next-stage").innerHTML = `<span>${next.label}</span>`;
-        document.getElementById("trip-status-label").textContent = next.badge;
-        showToast(`Trip updated: ${next.badge}`);
-      };
-
       let toastTimer = null;
       window.showToast = function(msg) {
-        const toast = document.getElementById("toast");
-        document.getElementById("toast-text").textContent = msg;
-        toast.classList.add("show");
+        const pill = document.getElementById("toast-pill");
+        document.getElementById("toast-content").textContent = msg;
+        pill.classList.add("show");
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
+        toastTimer = setTimeout(() => pill.classList.remove("show"), 2800);
       };
 
-      syncUI();
+      sync();
     })();
   </script>
 </body>
