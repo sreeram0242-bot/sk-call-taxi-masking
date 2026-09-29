@@ -699,6 +699,7 @@
     }
 
   </style>
+  <script src="capacitor.js"></script>
 </head>
 <body>
 
@@ -1122,68 +1123,71 @@
         let callSuccess = false;
         let errMsg = "";
 
-        // 1. Primary Route: High-Speed Edge Worker Proxy (Full CORS headers, 0 preflight blocking)
-        try {
-          console.log("Calling via Edge Worker Proxy:", EDGE_PROXY_URL);
-          const edgeRes = await fetch(EDGE_PROXY_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              party_a: num1,
-              party_b: num2
-            })
-          });
+        // 1. PRIMARY ROUTE (IN ANDROID APK): Native Java HttpURLConnection
+        // Runs outside browser sandbox, completely immune to CORS, no preflight, no DNS blocks!
+        const cap = window.Capacitor;
+        const capHttp = cap?.Plugins?.CapacitorHttp;
 
-          const edgeData = await edgeRes.json().catch(() => ({}));
-          console.log("Edge proxy response:", edgeRes.status, edgeData);
-
-          if ((edgeRes.status === 200 || edgeRes.status === 201) && edgeData.data) {
-            callSuccess = true;
-            showToast("📞 Incoming call ringing! Please answer +91 7969002802");
-            return;
-          } else if (edgeData.error) {
-            errMsg = typeof edgeData.error === "string" ? edgeData.error : (edgeData.error.message || JSON.stringify(edgeData.error));
-          }
-        } catch (edgeErr) {
-          console.warn("Edge proxy fetch error:", edgeErr);
-          errMsg = edgeErr.message || String(edgeErr);
-        }
-
-        // 2. Secondary Route: Native CapacitorHttp plugin (if running in Capacitor container)
-        if (!callSuccess) {
-          const capPlugin = window.Capacitor?.Plugins?.CapacitorHttp || window.CapacitorHttp;
-          if (capPlugin && typeof capPlugin.post === "function") {
-            try {
-              console.log("Calling via CapacitorHttp native plugin...");
-              const nativeRes = await capPlugin.post({
-                url: EDESY_DIRECT_URL,
-                headers: {
-                  "Authorization": `Bearer ${EDESY_TOKEN}`,
-                  "Content-Type": "application/json"
-                },
-                data: {
-                  party_a: num1,
-                  party_b: num2
-                }
-              });
-              console.log("CapacitorHttp response:", nativeRes);
-              if (nativeRes && (nativeRes.status === 200 || nativeRes.status === 201)) {
-                callSuccess = true;
-                showToast("📞 Ringing Phone 1 from " + config.virtualDid + "!");
-                return;
-              } else if (nativeRes && nativeRes.data) {
-                errMsg = nativeRes.data.message || JSON.stringify(nativeRes.data);
+        if (capHttp && typeof capHttp.post === "function") {
+          try {
+            console.log("⚡ Executing via Native Android CapacitorHttp bridge...");
+            const nativeRes = await capHttp.post({
+              url: EDESY_DIRECT_URL,
+              headers: {
+                "Authorization": `Bearer ${EDESY_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              data: {
+                party_a: num1,
+                party_b: num2
               }
-            } catch (capErr) {
-              console.warn("CapacitorHttp failed, trying browser fetch fallback:", capErr);
-              errMsg = capErr.message || String(capErr);
+            });
+            console.log("Native response:", nativeRes);
+            if (nativeRes && (nativeRes.status === 200 || nativeRes.status === 201)) {
+              showToast("📞 Incoming call ringing! Answer from " + config.virtualDid);
+              return;
+            } else if (nativeRes && nativeRes.data) {
+              const msg = nativeRes.data.message || (nativeRes.data.error ? (nativeRes.data.error.message || nativeRes.data.error) : JSON.stringify(nativeRes.data));
+              errMsg = msg;
             }
+          } catch (capErr) {
+            console.warn("Native CapacitorHttp error:", capErr);
+            errMsg = capErr.message || String(capErr);
           }
         }
 
-        // 3. Fallback: Direct Edesy Call
+        // 2. SECONDARY ROUTE (BROWSER / FALLBACK): Cloudflare Edge Worker Proxy
+        if (!callSuccess && typeof fetch === "function") {
+          try {
+            console.log("Trying Edge Worker Proxy:", EDGE_PROXY_URL);
+            const edgeRes = await fetch(EDGE_PROXY_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                party_a: num1,
+                party_b: num2
+              })
+            });
+
+            const edgeData = await edgeRes.json().catch(() => ({}));
+            console.log("Edge proxy response:", edgeRes.status, edgeData);
+
+            if ((edgeRes.status === 200 || edgeRes.status === 201) && edgeData.data) {
+              callSuccess = true;
+              showToast("📞 Incoming call ringing! Answer from " + config.virtualDid);
+              return;
+            } else if (edgeData.error) {
+              errMsg = typeof edgeData.error === "string" ? edgeData.error : (edgeData.error.message || JSON.stringify(edgeData.error));
+            }
+          } catch (edgeErr) {
+            console.warn("Edge proxy fetch error:", edgeErr);
+            if (!errMsg) errMsg = edgeErr.message || String(edgeErr);
+          }
+        }
+
+        // 3. TERTIARY ROUTE: Direct Edesy Call
         if (!callSuccess) {
           try {
             const response = await fetch(EDESY_DIRECT_URL, {
@@ -1200,13 +1204,13 @@
 
             const data = await response.json().catch(() => ({}));
             if (response.ok && data.data) {
-              showToast("📞 Ringing Phone 1 from " + config.virtualDid + "!");
+              showToast("📞 Incoming call ringing from " + config.virtualDid + "!");
             } else {
               showToast("Notice: " + (data.error ? (data.error.message || data.error) : (errMsg || "Masked call placed.")));
             }
           } catch (err) {
             console.error("Direct fetch error:", err);
-            showToast("Notice: " + (errMsg ? errMsg : "Answering incoming call from " + config.virtualDid));
+            showToast("Notice: " + (errMsg ? errMsg : "Calling " + num1 + " via " + config.virtualDid));
           }
         }
       };
