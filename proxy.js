@@ -61,6 +61,56 @@ const server = http.createServer(async (request, response) => {
     }
   }
 
+  // Handle Inbound Masking Webhook from Edesy (When either party calls +91 7969002802 from phone dialer)
+  if (request.method === "POST" && (url.pathname === "/api/inbound" || url.pathname === "/inbound" || url.pathname === "/webhook/inbound")) {
+    let body = "";
+    for await (const chunk of request) {
+      body += chunk;
+      if (Buffer.byteLength(body) > MAX_BODY_BYTES) {
+        request.destroy();
+        return sendJson(response, 413, { error: "Request body is too large" });
+      }
+    }
+
+    let eventData = {};
+    try {
+      eventData = JSON.parse(body);
+    } catch {
+      return sendJson(response, 400, { error: "Invalid JSON" });
+    }
+
+    console.log("📥 Inbound Call Webhook on DID +91 7969002802:", eventData);
+
+    // If it's a test event from the Edesy portal ("Send test event" button)
+    if (eventData.test) {
+      return sendJson(response, 200, {
+        action: "connect",
+        target_number: "7871580261"
+      });
+    }
+
+    const caller = String(eventData.caller || "").replace(/\D/g, "").slice(-10);
+    const PASSENGER_PHONE = "9629661668";
+    const DRIVER_PHONE = "7871580261";
+
+    let targetNumber = DRIVER_PHONE;
+    if (caller === DRIVER_PHONE) {
+      // Driver calls the DID -> Forward to Passenger!
+      targetNumber = PASSENGER_PHONE;
+    } else {
+      // Passenger calls the DID -> Forward to Driver!
+      targetNumber = DRIVER_PHONE;
+    }
+
+    console.log(`🔀 Connecting inbound call: Caller (${caller}) ➔ Forwarding to (${targetNumber})`);
+
+    return sendJson(response, 200, {
+      action: "connect",
+      target_number: targetNumber,
+      caller_id: "917969002802"
+    });
+  }
+
   // Handle Number Masking Call
   if (request.method !== "POST") {
     return sendJson(response, 404, { error: "Endpoint not found" });
