@@ -178,6 +178,16 @@ To ensure neither Antigravity nor any developer repeats these errors in future c
 
 ---
 
+### Mistake 14: Triggering Browser CORS Preflights with `application/json` vs Using CORS-Simple `text/plain`
+- **What Was Built:** Frontend sent requests with `headers: { "Content-Type": "application/json" }`.
+- **Why It Failed:** 
+  1. Under W3C CORS standards, `application/json` is NOT a CORS-safelisted header.
+  2. Every browser (Chrome, Android WebView, Safari) forces an HTTP `OPTIONS` preflight request before sending the actual POST.
+  3. If the destination gateway or network firewall drops or mishandles the `OPTIONS` preflight (as Edesy and certain proxies do), the browser immediately terminates the request with `TypeError: Failed to fetch`.
+- **The Permanent Rule:** For edge API proxies that bridge mobile web/WebView clients to voice gateways, always send payloads with **`Content-Type: text/plain`** and parse JSON from the body text on the proxy (`JSON.parse(await request.text())`). Under W3C standards, `text/plain` is a **CORS Simple Request** that completely bypasses the preflight `OPTIONS` phase. The browser sends the POST directly, eliminating the entire class of CORS preflight failures forever.
+
+---
+
 ## 2. Telecom Architecture: Dual-Leg Cloud Bridge vs Inbound Dynamic DID Mapping
 
 Understanding how telecom routing works under the hood is critical to choosing the right architecture and avoiding broken implementations.
