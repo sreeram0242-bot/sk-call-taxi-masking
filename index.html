@@ -775,7 +775,7 @@
 
         <div class="ride-id-pill">
           <span class="live-dot"></span>
-          <span>RIDE #TRIP-4920</span>
+          <span>RIDE #TRIP-4920 · <strong style="color:#16a34a;">v18 PROD</strong></span>
         </div>
 
         <button class="btn-circle" onclick="openNumberModal()" title="Change Calling Numbers">
@@ -885,12 +885,23 @@
 
   </div>
 
-  <!-- MODAL: SET TARGET DESTINATION NUMBER & CALL MODES -->
+      <!-- MODAL: SET TARGET DESTINATION NUMBER & CALL MODES -->
   <div class="modal-backdrop" id="number-modal" hidden>
     <div class="modal-content">
       <div class="modal-top">
         <h3>Call Routing Configuration</h3>
         <button class="btn-modal-close" onclick="closeNumberModal()">✕</button>
+      </div>
+
+      <!-- Connection & Diagnostic Health Box -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 11px; font-weight: 700; color: #475569; letter-spacing: 0.5px;">VOICE BACKEND STATUS</span>
+          <button type="button" onclick="testConnection()" style="background: #2563eb; color: #fff; border: 0; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">⚡ Test Connection</button>
+        </div>
+        <div id="diag-status" style="font-size: 12px; color: #16a34a; font-weight: 600; line-height: 1.4;">
+          🟢 Active Server: https://sk-call-taxi-masking.onrender.com
+        </div>
       </div>
 
       <!-- Mode Toggle inside modal -->
@@ -909,7 +920,7 @@
         <label class="input-label" for="input-target-phone">Phone 1: Caller / Passenger Phone</label>
         <div class="phone-input-wrap">
           <span class="phone-prefix">+91</span>
-          <input type="tel" id="input-target-phone" class="phone-field" maxlength="10" placeholder="e.g. 9629661668" value="9629661668">
+          <input type="tel" id="input-target-phone" class="phone-field" maxlength="10" placeholder="e.g. 9629661668" value="9629661668" oninput="this.value = this.value.replace(/\D/g, '').slice(-10)">
         </div>
         <div class="input-subtext">The first phone that rings when using Cloud Call. Must be a real active SIM.</div>
       </div>
@@ -918,7 +929,7 @@
         <label class="input-label" for="input-driver-phone">Phone 2: Driver / Target Phone</label>
         <div class="phone-input-wrap">
           <span class="phone-prefix">+91</span>
-          <input type="tel" id="input-driver-phone" class="phone-field" maxlength="10" placeholder="e.g. 7871580261" value="7871580261">
+          <input type="tel" id="input-driver-phone" class="phone-field" maxlength="10" placeholder="e.g. 7871580261" value="7871580261" oninput="this.value = this.value.replace(/\D/g, '').slice(-10)">
         </div>
         <div class="input-subtext">The second phone that Edesy bridges to. Must also be a real active SIM.</div>
       </div>
@@ -940,6 +951,14 @@
       </div>
 
       <button class="btn-save-phone" onclick="saveNumbers()">Save Configuration</button>
+
+      <button type="button" onclick="resetToDefaultNumbers()" style="width: 100%; margin-top: 10px; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        🔄 Reset to Verified Numbers (9629661668 & 7871580261)
+      </button>
+
+      <button type="button" onclick="forceClearCache()" style="width: 100%; margin-top: 8px; background: transparent; color: #64748b; border: 0; padding: 8px; font-size: 12px; font-weight: 600; text-decoration: underline; cursor: pointer;">
+        🧹 Clear App Cache & Force Refresh
+      </button>
     </div>
   </div>
 
@@ -977,7 +996,7 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = "sk-call-taxi-white-theme-v15";
+      const STORAGE_KEY = "sk-call-taxi-white-theme-v18";
       
       const config = {
         targetPhone: "9629661668",  // Phone 1 (Passenger/Caller)
@@ -989,15 +1008,24 @@
 
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (saved) Object.assign(config, saved);
+        if (saved) {
+          if (saved.targetPhone) saved.targetPhone = String(saved.targetPhone).replace(/\D/g, "").slice(-10);
+          if (saved.driverPhone) saved.driverPhone = String(saved.driverPhone).replace(/\D/g, "").slice(-10);
+          Object.assign(config, saved);
+        }
       } catch(e) {}
 
-      const EDGE_PROXY_URL = "https://sk-voice-proxy.fortune-judo.workers.dev";
+      const PROXY_URL = "https://sk-call-taxi-masking.onrender.com/v1/masking/calls";
+      const PROXY_HEALTH_URL = "https://sk-call-taxi-masking.onrender.com/health";
       const EDESY_DIRECT_URL = "https://voice-api.edesy.in/v1/masking/calls";
       const EDESY_TOKEN = "vp_4d70661cad114d5b5a3243df2f16767a4d88aaf55f889195ef74f36ea67e0895";
 
       function syncUI() {
-        const cleanDialNumber = (config.dialerNumber || config.virtualDid || "+917969002802").replace(/[\s().-]/g, "");
+        const cleanTarget = (config.targetPhone || "9629661668").replace(/\D/g, "").slice(-10);
+        const cleanDriver = (config.driverPhone || "7871580261").replace(/\D/g, "").slice(-10);
+        config.targetPhone = cleanTarget;
+        config.driverPhone = cleanDriver;
+
         const callBtn = document.getElementById("btn-call-action");
         const callIcon = document.getElementById("btn-call-icon");
         const callText = document.getElementById("btn-call-text");
@@ -1008,8 +1036,8 @@
         const modalToggle = document.getElementById("modal-incoming-toggle");
 
         // Sync inputs
-        document.getElementById("input-target-phone").value = config.targetPhone || "9629661668";
-        document.getElementById("input-driver-phone").value = config.driverPhone || "7871580261";
+        document.getElementById("input-target-phone").value = cleanTarget;
+        document.getElementById("input-driver-phone").value = cleanDriver;
         document.getElementById("input-dialer-number").value = config.dialerNumber || config.virtualDid || "+917969002802";
         document.getElementById("input-virtual-did").value = config.virtualDid || "+917969002802";
 
@@ -1030,13 +1058,56 @@
           modeCard.classList.remove("incoming-active");
           callBtn.classList.remove("incoming-active");
           modeTitle.textContent = "Direct Phone Dialer (SIM Call)";
-          modeHint.textContent = "Opens your phone dialer to call Driver directly: +91 " + (config.driverPhone || "7871580261");
+          modeHint.textContent = "Opens your phone dialer to call Driver directly: +91 " + cleanDriver;
           callText.textContent = "Call Driver (SIM Dialer)";
-          const dialTarget = (config.driverPhone || "7871580261").replace(/[\s().-]/g, "");
-          callBtn.href = "tel:+91" + dialTarget;
+          callBtn.href = "tel:+91" + cleanDriver;
           callIcon.innerHTML = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>';
         }
       }
+
+      window.testConnection = async function() {
+        const diagStatus = document.getElementById("diag-status");
+        if (diagStatus) diagStatus.innerHTML = '<span style="color:#2563eb">⏳ Pinging backend server...</span>';
+        try {
+          const t0 = performance.now();
+          const res = await fetch(PROXY_HEALTH_URL, { cache: "no-store" });
+          const latency = Math.round(performance.now() - t0);
+          const data = await res.json();
+          if (res.ok && data.status === "ok") {
+            if (diagStatus) diagStatus.innerHTML = `<span style="color:#16a34a; font-weight:700;">🟢 Online (${latency}ms) · Voice Proxy Ready · DID: ${data.virtualDid || '+917969002802'}</span>`;
+            showToast(`✅ Server Online (${latency}ms)! Ready to make calls.`);
+          } else {
+            if (diagStatus) diagStatus.innerHTML = '<span style="color:#f59e0b">⚠️ Server response unexpected</span>';
+          }
+        } catch(e) {
+          if (diagStatus) diagStatus.innerHTML = `<span style="color:#ef4444">🔴 Offline / Waking up: ${e.message}</span>`;
+          showToast("⚠️ Server is waking up or unreachable. Please wait 10s and test again.");
+        }
+      };
+
+      window.resetToDefaultNumbers = function() {
+        config.targetPhone = "9629661668";
+        config.driverPhone = "7871580261";
+        config.virtualDid = "+917969002802";
+        config.dialerNumber = "7871580261";
+        config.incomingMode = true;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+        } catch(e) {}
+        syncUI();
+        showToast("✅ Reset to verified numbers: 9629661668 & 7871580261");
+      };
+
+      window.forceClearCache = function() {
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch(e) {}
+        showToast("🧹 Cache cleared! Reloading...");
+        setTimeout(() => {
+          window.location.href = window.location.pathname + '?nocache=' + Date.now();
+        }, 500);
+      };
 
       window.toggleIncomingMode = function(isIncoming) {
         config.incomingMode = isIncoming;
@@ -1060,18 +1131,20 @@
       };
 
       window.saveNumbers = function() {
-        const target = document.getElementById("input-target-phone").value.replace(/\D/g, "").slice(0, 10);
-        const driver = document.getElementById("input-driver-phone").value.replace(/\D/g, "").slice(0, 10);
+        const rawTarget = document.getElementById("input-target-phone").value;
+        const rawDriver = document.getElementById("input-driver-phone").value;
+        const target = rawTarget.replace(/\D/g, "").slice(-10);
+        const driver = rawDriver.replace(/\D/g, "").slice(-10);
         const dialer = document.getElementById("input-dialer-number").value.trim() || "+917969002802";
         const isIncoming = document.getElementById("modal-incoming-toggle").checked;
 
         if (target.length !== 10 || driver.length !== 10) {
-          showToast("Please enter two valid 10-digit phone numbers!");
+          showToast("⚠️ Please enter two valid 10-digit Indian phone numbers!");
           return;
         }
 
         if (target === driver) {
-          showToast("Phone 1 and Phone 2 must be different numbers!");
+          showToast("⚠️ Phone 1 and Phone 2 must be different numbers!");
           return;
         }
 
@@ -1086,7 +1159,7 @@
 
         syncUI();
         closeNumberModal();
-        showToast("Configuration saved successfully!");
+        showToast("✅ Configuration saved successfully!");
       };
 
       window.openConnectingModal = function() {
@@ -1105,62 +1178,65 @@
         const num2 = (config.driverPhone || "7871580261").replace(/\D/g, "").slice(-10);
 
         if (!num1 || num1.length !== 10 || !num2 || num2.length !== 10) {
-          showToast("Enter both 10-digit phone numbers in settings!");
+          showToast("⚠️ Enter both 10-digit phone numbers in settings!");
           openNumberModal();
           return;
         }
 
         if (num1 === num2) {
-          showToast("Passenger and Driver must be two different active phones!");
+          showToast("⚠️ Passenger and Driver must be two different active phones!");
           openNumberModal();
           return;
         }
 
-        // Open beautiful connection modal immediately
         openConnectingModal();
         showToast("📞 Connecting via Cloud Bridge (+91 7969002802)...");
 
         let callSuccess = false;
-        let errMsg = "";
+        let lastError = "";
 
-        // 1. PRIMARY ROUTE: High-Speed Edge Worker Proxy using CORS Simple Request (text/plain)
-        // Crucial: text/plain prevents the browser from ever generating an HTTP OPTIONS preflight request!
-        // The POST request is sent directly and accepted immediately.
+        // 1. PRIMARY ROUTE: Dedicated 24/7 Render Cloud Proxy (Permanent, CORS-enabled, connected to Edesy)
         try {
-          console.log("Calling Edge Proxy via CORS Simple Request...");
-          const edgeRes = await fetch(EDGE_PROXY_URL, {
+          console.log("⚡ [Route 1] Calling Permanent Voice Proxy:", PROXY_URL);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout for wake up
+
+          const proxyRes = await fetch(PROXY_URL, {
             method: "POST",
             headers: {
-              "Content-Type": "text/plain"
+              "Content-Type": "application/json"
             },
             body: JSON.stringify({
               party_a: num1,
               party_b: num2
-            })
+            }),
+            signal: controller.signal
           });
+          clearTimeout(timeoutId);
 
-          const edgeData = await edgeRes.json().catch(() => ({}));
-          console.log("Edge proxy response:", edgeRes.status, edgeData);
+          const proxyData = await proxyRes.json().catch(() => ({}));
+          console.log("Proxy response:", proxyRes.status, proxyData);
 
-          if ((edgeRes.status === 200 || edgeRes.status === 201) && edgeData.data) {
+          if ((proxyRes.status === 200 || proxyRes.status === 201) && (proxyData.data || proxyData.call_sid || proxyData.status === "success")) {
             callSuccess = true;
+            const sid = (proxyData.data && proxyData.data.call_sid) || proxyData.call_sid || "Active";
             showToast("📞 Incoming call ringing! Please answer +91 7969002802");
             return;
-          } else if (edgeData.error) {
-            errMsg = typeof edgeData.error === "string" ? edgeData.error : (edgeData.error.message || JSON.stringify(edgeData.error));
+          } else if (proxyData.error) {
+            lastError = typeof proxyData.error === "string" ? proxyData.error : (proxyData.error.message || JSON.stringify(proxyData.error));
           }
-        } catch (edgeErr) {
-          console.warn("Edge proxy fetch error:", edgeErr);
-          errMsg = edgeErr.message || String(edgeErr);
+        } catch (proxyErr) {
+          console.warn("[Route 1] Proxy fetch error:", proxyErr);
+          lastError = proxyErr.name === "AbortError" ? "Server wake-up timeout (please tap Call again)" : (proxyErr.message || String(proxyErr));
         }
 
-        // 2. SECONDARY ROUTE: Native Android Java HttpURLConnection (if in native APK container)
+        // 2. SECONDARY ROUTE: Native Android Java HttpURLConnection (if running in Capacitor APK)
         if (!callSuccess) {
           const cap = window.Capacitor;
           const capHttp = cap?.Plugins?.CapacitorHttp;
-          if (capHttp && typeof capHttp.post === "function") {
+          if (capHttp && typeof capHttp.post === "function" && cap.isNativePlatform && cap.isNativePlatform()) {
             try {
-              console.log("⚡ Trying Native Android CapacitorHttp bridge...");
+              console.log("⚡ [Route 2] Trying Native Android CapacitorHttp bridge...");
               const nativeRes = await capHttp.post({
                 url: EDESY_DIRECT_URL,
                 headers: {
@@ -1178,14 +1254,15 @@
                 return;
               }
             } catch (capErr) {
-              console.warn("Native CapacitorHttp error:", capErr);
+              console.warn("[Route 2] Native CapacitorHttp error:", capErr);
             }
           }
         }
 
-        // 3. TERTIARY ROUTE: Direct Edesy Call
+        // 3. TERTIARY ROUTE: Direct Edesy Call Fallback
         if (!callSuccess) {
           try {
+            console.log("⚡ [Route 3] Trying Direct Edesy Call...");
             const response = await fetch(EDESY_DIRECT_URL, {
               method: "POST",
               headers: {
@@ -1199,18 +1276,18 @@
             });
 
             const data = await response.json().catch(() => ({}));
-            if (response.ok && data.data) {
+            if (response.ok && (data.data || data.status === "success")) {
               callSuccess = true;
               showToast("📞 Incoming call ringing from " + config.virtualDid + "!");
               return;
             }
           } catch (err) {
-            console.error("Direct fetch error:", err);
+            console.warn("[Route 3] Direct fetch error:", err);
           }
         }
 
         if (!callSuccess) {
-          showToast("Notice: " + (errMsg ? errMsg : "Calling " + num1 + " via " + config.virtualDid));
+          showToast("Notice: " + (lastError || "Could not bridge call. Check Test Connection in Settings."));
         }
       };
 
@@ -1220,7 +1297,7 @@
         document.getElementById("toast-content").textContent = msg;
         pill.classList.add("show");
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => pill.classList.remove("show"), 3400);
+        toastTimer = setTimeout(() => pill.classList.remove("show"), 3800);
       };
 
       syncUI();

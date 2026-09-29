@@ -52,8 +52,10 @@ Neither the **Passenger** (`9629661668`) nor the **Driver** (`7871580261`) ever 
                                    │ POST /v1/masking/calls
                                    │ { party_a, party_b }
                      ┌─────────────┴─────────────┐
-                     │ Cloudflare Edge Proxy     │
-                     │ (Full CORS headers)       │
+                     │ Permanent Backend Proxy   │
+                     │ (Render 24/7 CORS Engine) │
+                     │ sk-call-taxi-masking      │
+                     │ .onrender.com             │
                      └─────────────▲─────────────┘
                                    │ HTTPS fetch()
                      ┌─────────────┴─────────────┐
@@ -65,9 +67,10 @@ Neither the **Passenger** (`9629661668`) nor the **Driver** (`7871580261`) ever 
 - Virtual numbers like `+91 7969002802` are **outbound-only PRI/SIP trunks**. Carriers (Jio, Airtel, Vi) reject inbound SIM calls with `SIP 486 Busy` or `SIP 603 Decline`.
 - The only way to connect a masked call is via **Two-Legged Outbound Bridge** (`POST /v1/masking/calls`), where the PBX calls both parties.
 
-### WebView CORS Preflight Solution
-- Edesy's gateway does not return `Access-Control-Allow-Origin` on HTTP `OPTIONS` preflight requests, causing Android WebView / Chrome to block direct browser fetches.
-- **Solution:** Calls route through the high-speed edge proxy `https://sk-voice-proxy.fortune-judo.workers.dev`, which provides `Access-Control-Allow-Origin: *` headers and forwards requests server-to-server.
+### Permanent Voice Proxy & CORS Solution
+- Edesy's gateway omits `Access-Control-Allow-Origin` on HTTP `OPTIONS` preflight requests from arbitrary origins, causing standard browser `fetch()` calls in WebViews and mobile browsers to drop.
+- **Solution:** Calls route through the permanent backend proxy **`https://sk-call-taxi-masking.onrender.com/v1/masking/calls`**, which injects full CORS headers (`Access-Control-Allow-Origin: *`), automatically normalizes 10-digit Indian phone numbers, and bridges directly to `voice-api.edesy.in`.
+- In-app **Diagnostic Test Button** (`⚡ Test Connection`) allows instantaneous verification of backend proxy availability and latency directly from the user's phone.
 
 ---
 

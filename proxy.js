@@ -62,7 +62,7 @@ const server = http.createServer(async (request, response) => {
   }
 
   // Handle Number Masking Call
-  if (request.method !== "POST" || (!url.pathname.endsWith("/v1/masking/calls") && !url.pathname.endsWith("/api/masking/calls"))) {
+  if (request.method !== "POST") {
     return sendJson(response, 404, { error: "Endpoint not found" });
   }
 
