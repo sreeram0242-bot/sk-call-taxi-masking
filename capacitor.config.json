@@ -5,7 +5,11 @@
   "bundledWebRuntime": false,
   "server": {
     "url": "https://sreeram0242-bot.github.io/sk-call-taxi-masking/",
-    "cleartext": true
+    "cleartext": true,
+    "allowNavigation": [
+      "sreeram0242-bot.github.io",
+      "*.github.io"
+    ]
   },
   "plugins": {
     "CapacitorHttp": {

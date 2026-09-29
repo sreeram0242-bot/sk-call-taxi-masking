@@ -1123,67 +1123,63 @@
         let callSuccess = false;
         let errMsg = "";
 
-        // 1. PRIMARY ROUTE (IN ANDROID APK): Native Java HttpURLConnection
-        // Runs outside browser sandbox, completely immune to CORS, no preflight, no DNS blocks!
-        const cap = window.Capacitor;
-        const capHttp = cap?.Plugins?.CapacitorHttp;
+        // 1. PRIMARY ROUTE: High-Speed Edge Worker Proxy using CORS Simple Request (text/plain)
+        // Crucial: text/plain prevents the browser from ever generating an HTTP OPTIONS preflight request!
+        // The POST request is sent directly and accepted immediately.
+        try {
+          console.log("Calling Edge Proxy via CORS Simple Request...");
+          const edgeRes = await fetch(EDGE_PROXY_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain"
+            },
+            body: JSON.stringify({
+              party_a: num1,
+              party_b: num2
+            })
+          });
 
-        if (capHttp && typeof capHttp.post === "function") {
-          try {
-            console.log("⚡ Executing via Native Android CapacitorHttp bridge...");
-            const nativeRes = await capHttp.post({
-              url: EDESY_DIRECT_URL,
-              headers: {
-                "Authorization": `Bearer ${EDESY_TOKEN}`,
-                "Content-Type": "application/json"
-              },
-              data: {
-                party_a: num1,
-                party_b: num2
-              }
-            });
-            console.log("Native response:", nativeRes);
-            if (nativeRes && (nativeRes.status === 200 || nativeRes.status === 201)) {
-              showToast("📞 Incoming call ringing! Answer from " + config.virtualDid);
-              return;
-            } else if (nativeRes && nativeRes.data) {
-              const msg = nativeRes.data.message || (nativeRes.data.error ? (nativeRes.data.error.message || nativeRes.data.error) : JSON.stringify(nativeRes.data));
-              errMsg = msg;
-            }
-          } catch (capErr) {
-            console.warn("Native CapacitorHttp error:", capErr);
-            errMsg = capErr.message || String(capErr);
+          const edgeData = await edgeRes.json().catch(() => ({}));
+          console.log("Edge proxy response:", edgeRes.status, edgeData);
+
+          if ((edgeRes.status === 200 || edgeRes.status === 201) && edgeData.data) {
+            callSuccess = true;
+            showToast("📞 Incoming call ringing! Please answer +91 7969002802");
+            return;
+          } else if (edgeData.error) {
+            errMsg = typeof edgeData.error === "string" ? edgeData.error : (edgeData.error.message || JSON.stringify(edgeData.error));
           }
+        } catch (edgeErr) {
+          console.warn("Edge proxy fetch error:", edgeErr);
+          errMsg = edgeErr.message || String(edgeErr);
         }
 
-        // 2. SECONDARY ROUTE (BROWSER / FALLBACK): Cloudflare Edge Worker Proxy
-        if (!callSuccess && typeof fetch === "function") {
-          try {
-            console.log("Trying Edge Worker Proxy:", EDGE_PROXY_URL);
-            const edgeRes = await fetch(EDGE_PROXY_URL, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                party_a: num1,
-                party_b: num2
-              })
-            });
-
-            const edgeData = await edgeRes.json().catch(() => ({}));
-            console.log("Edge proxy response:", edgeRes.status, edgeData);
-
-            if ((edgeRes.status === 200 || edgeRes.status === 201) && edgeData.data) {
-              callSuccess = true;
-              showToast("📞 Incoming call ringing! Answer from " + config.virtualDid);
-              return;
-            } else if (edgeData.error) {
-              errMsg = typeof edgeData.error === "string" ? edgeData.error : (edgeData.error.message || JSON.stringify(edgeData.error));
+        // 2. SECONDARY ROUTE: Native Android Java HttpURLConnection (if in native APK container)
+        if (!callSuccess) {
+          const cap = window.Capacitor;
+          const capHttp = cap?.Plugins?.CapacitorHttp;
+          if (capHttp && typeof capHttp.post === "function") {
+            try {
+              console.log("⚡ Trying Native Android CapacitorHttp bridge...");
+              const nativeRes = await capHttp.post({
+                url: EDESY_DIRECT_URL,
+                headers: {
+                  "Authorization": `Bearer ${EDESY_TOKEN}`,
+                  "Content-Type": "application/json"
+                },
+                data: {
+                  party_a: num1,
+                  party_b: num2
+                }
+              });
+              if (nativeRes && (nativeRes.status === 200 || nativeRes.status === 201)) {
+                callSuccess = true;
+                showToast("📞 Incoming call ringing! Answer from " + config.virtualDid);
+                return;
+              }
+            } catch (capErr) {
+              console.warn("Native CapacitorHttp error:", capErr);
             }
-          } catch (edgeErr) {
-            console.warn("Edge proxy fetch error:", edgeErr);
-            if (!errMsg) errMsg = edgeErr.message || String(edgeErr);
           }
         }
 
@@ -1204,14 +1200,17 @@
 
             const data = await response.json().catch(() => ({}));
             if (response.ok && data.data) {
+              callSuccess = true;
               showToast("📞 Incoming call ringing from " + config.virtualDid + "!");
-            } else {
-              showToast("Notice: " + (data.error ? (data.error.message || data.error) : (errMsg || "Masked call placed.")));
+              return;
             }
           } catch (err) {
             console.error("Direct fetch error:", err);
-            showToast("Notice: " + (errMsg ? errMsg : "Calling " + num1 + " via " + config.virtualDid));
           }
+        }
+
+        if (!callSuccess) {
+          showToast("Notice: " + (errMsg ? errMsg : "Calling " + num1 + " via " + config.virtualDid));
         }
       };
 
