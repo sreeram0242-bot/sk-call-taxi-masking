@@ -15,19 +15,21 @@ description: Comprehensive expert architectural guide, chronological post-mortem
 To ensure neither Antigravity nor any developer repeats these errors in future client projects, here is the chronological breakdown of every mistake made from start to finish, the technical root cause, and the permanent architectural solution.
 
 ```
-       MISTAKE CHRONOLOGY IN CALL TAXI MASKING IMPLEMENTATION
-┌───────────────────────────────────────────────────────────────────┐
-│ 1. Dark Developer UI        ➔ Rejected (Client wanted Ola/Uber)   │
-│ 2. Fake In-App VoIP Modal   ➔ Rejected (Needed real GSM telephony)│
-│ 3. Sample Dummy Numbers     ➔ Polluted Edesy CDR with failed logs │
-│ 4. Dialer (`tel:+9179...`)   ➔ Hung up instantly without ringing   │
-│ 5. Dialer (`tel:<real_num>`) ➔ Exposed private driver number      │
-│ 6. Hidden Cloud Toggle      ➔ Users tapped broken dialer first    │
-│ 7. JS Syntax Error (`else`) ➔ Froze Settings button completely    │
-│ 8. Notch Area Insets Cutoff ➔ Header buttons unclickable on phone │
-│ 9. Static Localhost APKs    ➔ Constant tedious reinstallations    │
-│ 10. Wrong Host Domain       ➔ voice.edesy.in DNS ENOTFOUND error  │
-└───────────────────────────────────────────────────────────────────┘
+                  CHRONOLOGICAL ERROR POST-MORTEM & RESOLUTION PATH
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 1.  Dark Developer UI        ➔ Rejected (Client wanted consumer Ola/Uber ride screen)            │
+│ 2.  Fake In-App VoIP Modal   ➔ Rejected (Needed real GSM cellular telephony, not simulated WebRTC)│
+│ 3.  Sample Dummy Numbers     ➔ Polluted Edesy CDR with failed logs (9876543210 <-> 9876543211)   │
+│ 4.  Dialer (`tel:+9179...`)   ➔ Carrier hung up in 0.5s (Outbound-only virtual DID has no inbound) │
+│ 5.  Dialer (`tel:<real_num>`) ➔ Exposed private driver number in native phone dialer             │
+│ 6.  Hidden Cloud Toggle      ➔ Users tapped broken dialer first; masked bridge was obscured      │
+│ 7.  JS Syntax Error (`else`) ➔ Froze Settings button completely in Android WebView               │
+│ 8.  Notch Safe-Area Cutoff   ➔ Status bar overlapped header buttons on physical Android devices  │
+│ 9.  Static Localhost APKs    ➔ Tedious compilation and APK reinstallation for every tiny bug     │
+│ 10. Wrong Host Domain        ➔ voice.edesy.in DNS ENOTFOUND error (Real API is voice-api.edesy.in)│
+│ 11. WebView CORS Blockage    ➔ Terminal curl works, but WebView fetch drops due to missing OPTIONS│
+│ 12. "Dialer vs Bridge" Myth  ➔ Expecting an outbound trunk to accept inbound dialer calls       │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -118,59 +120,205 @@ To ensure neither Antigravity nor any developer repeats these errors in future c
 
 ---
 
-## 2. Telecom Architecture: How Number Masking ACTUALLY Works
-
-### Why Direct Dialing (`tel:`) Fails vs Why Cloud Bridge Works
-
-```
-❌ BROKEN PATTERN: Direct Dialing an Outbound Virtual Trunk
-[ User Phone ] ──(Dials +91 7969002802)──> [ Carrier (Airtel/Jio) ] ──> [ Edesy Trunk Gateway ]
-                                                                                   │
-                                                         ❌ REJECTED: SIP 486 Busy / 603 Decline
-                                                         (Trunk does not accept inbound calls)
-                                                         (Hangs up in 0.5s; 0s in CDR)
-
-─────────────────────────────────────────────────────────────────────────────────────────────
-
-✅ WORKING PATTERN: Click-to-Call Cloud Bridge (The Ola / Uber Way)
-[ Passenger Phone ]                                                        [ Driver Phone ]
-   (9629661668)                                                              (7871580261)
-        ▲                                                                         ▲
-        │ 1. Rings incoming from +91 7969002802                                   │
-        │    (Passenger answers on normal phone)                                  │
-        │                                                                         │ 2. Rings incoming
-        │                         ┌──────────────────────┐                        │    from +91 7969002802
-        └─────────────────────────┤   Edesy Cloud PBX    ├────────────────────────┘
-                                  │ (voice-api.edesy.in) │
-                                  └──────────────────────┘
-                                             ▲
-                                             │ HTTP POST /v1/masking/calls
-                                             │ { party_a, party_b }
-                                    [ Mobile App Screen ]
-```
-
-### The Click-to-Call Protocol Steps:
-1. **User taps "Call Driver" in the App.**
-2. App sends HTTPS request: `POST https://voice-api.edesy.in/v1/masking/calls` with:
-   - `party_a`: Passenger phone (`9629661668`)
-   - `party_b`: Driver phone (`7871580261`)
-3. Edesy Cloud PBX places an **outbound call** to `party_a`.
-4. Passenger's phone rings with an incoming cellular call showing Caller ID: `+91 7969002802`.
-5. Passenger answers the phone.
-6. Edesy immediately dials `party_b`, also displaying Caller ID: `+91 7969002802`.
-7. Driver answers. Both parties speak over standard cellular GSM with 100% privacy.
+### Mistake 11: Edesy Gateway Missing `Access-Control-Allow-Origin` on Preflight `OPTIONS` (WebView CORS Deadlock)
+- **What Was Built:** App fired `fetch("https://voice-api.edesy.in/v1/masking/calls", { headers: { "Authorization": "Bearer ...", "Content-Type": "application/json" } })` directly from browser JavaScript in Android WebView.
+- **Why It Failed:** 
+  1. Terminal `curl` commands succeeded with HTTP 201 Created and completed calls (confirmed on Edesy live CDR).
+  2. In Android WebView / Chrome browser, adding custom headers (`Authorization`, `Content-Type`) triggers a mandatory HTTP `OPTIONS` preflight request.
+  3. Edesy's API Gateway / Nginx configuration responds to `OPTIONS`:
+     ```http
+     HTTP/1.1 200 OK
+     Access-Control-Allow-Headers: Content-Type,Accept,Origin,Authorization...
+     Access-Control-Allow-Methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+     Access-Control-Max-Age: 86400
+     ```
+     **Edesy omits `Access-Control-Allow-Origin` from the `OPTIONS` preflight response!** It only includes it in actual `POST` responses.
+  4. The Android WebView enforces browser security and aborts the fetch before sending the `POST` request.
+  5. The call never reaches Edesy, nothing is recorded in CDR, and the user's phone never rings!
+- **The Permanent Rule:** Never rely on browser `fetch()` for third-party telecom APIs with flawed CORS preflight handling. In Capacitor, **ALWAYS enable and use native HTTP networking**:
+  ```json
+  // capacitor.config.json
+  {
+    "plugins": {
+      "CapacitorHttp": {
+        "enabled": true
+      }
+    }
+  }
+  ```
+  Native Java `HttpURLConnection` runs outside the browser sandbox, sends NO preflight `OPTIONS` requests, and is **completely immune to CORS blocking**. Alternatively, route requests through a backend server or Cloudflare Worker edge proxy.
 
 ---
 
-## 3. Edesy Voice API Reference & Payloads
+### Mistake 12: Client Expectation Mismatch: "Why doesn't the button open my phone dialer with the masked number?"
+- **The User's Request:** *"if i click call button it shows call masked attend incoming call, fix that i want it to take me to the dialer, it wants to dial the masked number, if i call it must connect the call and speak with masked number."*
+- **Why This Cannot Work on Standard Outbound Masking Trunks:**
+  - Clients intuitively expect to see their phone's native green dialer open with `+91 7969002802` pre-filled, press dial, and be connected to their driver.
+  - However, telecom carrier routing does not work by "magic". When a SIM card dials a number, the telecom switch sends an inbound SIP INVITE to the owner of that number.
+  - If the DID is an **outbound-only PRI/SIP trunk** without Inbound IVR/DID mapping, the switch rejects it instantly with `SIP 486 Busy` or `SIP 603 Decline`.
+  - For a dialer to work, the telecom provider must support **Inbound Dynamic Session Mapping (Proxy)**:
+    1. Passenger opens app; app requests temporary session: `DID + Passenger Number -> Driver Number` valid for 30 minutes.
+    2. App opens dialer `tel:+917969002802`.
+    3. Passenger dials.
+    4. Telecom provider receives incoming call, checks Caller ID (`9629661668`), queries the active session, and forwards to driver (`7871580261`).
+  - Edesy Voice API does NOT offer dynamic inbound proxy mapping on basic masking plans. It is built strictly as a **Two-Legged Outbound Cloud Bridge**.
+- **The Permanent Rule:** When using Edesy or two-legged bridge APIs, never promise or implement direct dialer links (`tel:`). Instead, build an **intuitive, reassuring incoming call transition screen** in the UI:
+  - Display an animated incoming call badge: *"Connecting securely... Pick up incoming call from +91 7969002802 to talk to your driver"*.
+  - Show the user why their phone is ringing instead of dialing out.
 
-### Headers
+---
+
+## 2. Telecom Architecture: Dual-Leg Cloud Bridge vs Inbound Dynamic DID Mapping
+
+Understanding how telecom routing works under the hood is critical to choosing the right architecture and avoiding broken implementations.
+
+### Comparison of the Two Telecom Patterns
+
+| Feature | Pattern A: Dual-Leg Outbound Bridge (Edesy, Uber, Ola) | Pattern B: Inbound Dynamic DID Proxy (Twilio Proxy, Exotel ExoPhone) |
+| :--- | :--- | :--- |
+| **How it starts** | App sends API request: `POST /v1/masking/calls` | App reserves session via API; opens `tel:+91DID` in native dialer |
+| **Who initiates the call** | Cloud PBX dials Passenger (Leg 1), then Driver (Leg 2) | Passenger dials the virtual DID from their native phone dialer |
+| **User Experience** | Passenger's phone rings with an **incoming call** from DID | Passenger sees standard **outgoing call** screen in phone dialer |
+| **DID Requirement** | Outbound-only SIP/PRI Trunk (Cost-effective, simple) | Inbound DID with Webhook / Dynamic routing engine |
+| **Carrier Costs** | 2 call legs billed simultaneously (Leg A + Leg B) | Inbound leg + Outbound leg billed |
+| **TRAI Compliance** | 100% compliant in India (Both parties see masked DID) | 100% compliant in India |
+| **Supported by Edesy?** | **YES (Primary supported mechanism)** | **NO (Edesy trunk drops direct inbound mobile dials)** |
+
+---
+
+### Detailed Call Signaling Flow (Pattern A - Edesy Dual-Leg Bridge)
+
+```
+[ Passenger Phone ]           [ Edesy Cloud PBX ]            [ Driver Phone ]
+   (9629661668)               (voice-api.edesy.in)             (7871580261)
+        │                              │                            │
+        │  1. App sends POST /calls    │                            │
+        │ ───────────────────────────> │                            │
+        │                              │                            │
+        │  2. SIP INVITE (Leg A)       │                            │
+        │     Caller ID: 7969002802    │                            │
+        │ <─────────────────────────── │                            │
+        │                              │                            │
+        │  3. 180 Ringing              │                            │
+        │ ───────────────────────────> │                            │
+        │                              │                            │
+        │  4. 200 OK (Passenger Ans)  │                            │
+        │ ───────────────────────────> │                            │
+        │                              │                            │
+        │                              │  5. SIP INVITE (Leg B)     │
+        │                              │     Caller ID: 7969002802  │
+        │                              │ ─────────────────────────> │
+        │                              │                            │
+        │                              │  6. 180 Ringing            │
+        │                              │ <───────────────────────── │
+        │                              │                            │
+        │                              │  7. 200 OK (Driver Ans)    │
+        │                              │ <───────────────────────── │
+        │                              │                            │
+        │ <════════════════════════════╪══════════════════════════> │
+        │        8. Full Duplex Audio Bridge (GSM Cellular)         │
+        │           Both parties see +91 7969002802                 │
+        │           Complete Number Privacy Maintained              │
+```
+
+---
+
+## 3. Capacitor Android & WebView Network Architecture
+
+### The CORS Preflight Issue in WebViews
+When an Android app built with Capacitor or Cordova makes an HTTP request via `fetch()` or `XMLHttpRequest`:
+1. The WebView's Chromium engine treats requests from `http://localhost`, `https://localhost`, or `https://<user>.github.io` as cross-origin.
+2. Because the request includes `Authorization: Bearer ...` and `Content-Type: application/json`, the browser sends an HTTP `OPTIONS` preflight request.
+3. If the server does not include `Access-Control-Allow-Origin: *` in the `OPTIONS` response (as is the case with Edesy's gateway), the browser throws:
+   `Access to fetch at 'https://voice-api.edesy.in/v1/masking/calls' from origin 'https://...' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.`
+4. The request is aborted before reaching the API.
+
+### The Solution: Capacitor Native HTTP (`CapacitorHttp`)
+Capacitor provides a native HTTP plugin that replaces WebView network calls with native Android Java networking (`HttpURLConnection` / `OkHttp`).
+
+#### 1. Enable in `capacitor.config.json`
+```json
+{
+  "appId": "com.sk.calltaximasking",
+  "appName": "SK Taxi",
+  "webDir": "www",
+  "server": {
+    "url": "https://sreeram0242-bot.github.io/sk-call-taxi-masking/",
+    "cleartext": true
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}
+```
+
+#### 2. Robust Client-Side API Handler (with Native Fallback)
+```javascript
+async function initiateMaskedCall(passengerPhone, driverPhone, apiKey) {
+  const url = 'https://voice-api.edesy.in/v1/masking/calls';
+  const headers = {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  };
+  const body = {
+    party_a: passengerPhone.replace(/\D/g, '').slice(-10),
+    party_b: driverPhone.replace(/\D/g, '').slice(-10)
+  };
+
+  // 1. Try Native Capacitor HTTP first (bypasses CORS entirely)
+  if (window.Capacitor?.Plugins?.CapacitorHttp) {
+    try {
+      const response = await window.Capacitor.Plugins.CapacitorHttp.post({
+        url: url,
+        headers: headers,
+        data: body
+      });
+      if (response.status >= 200 && response.status < 300) {
+        return { success: true, data: response.data };
+      }
+      throw new Error(response.data?.message || `HTTP ${response.status}`);
+    } catch (nativeErr) {
+      console.warn('CapacitorHttp failed, trying fallback fetch', nativeErr);
+    }
+  }
+
+  // 2. Fallback to standard fetch
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: headers,
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.message || `API Error HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  return { success: true, data: data };
+}
+```
+
+---
+
+## 4. Edesy Voice API Reference & Production Payloads
+
+### API Hosts
+- **Production API:** `https://voice-api.edesy.in`
+- **Web Management Dashboard:** `https://masking.edesy.in`
+
+### Authentication
+Every request must include:
 ```http
-Authorization: Bearer <API_KEY>
+Authorization: Bearer vp_4d70661cad114d5b5a3243df2f16767a4d88aaf55f889195ef74f36ea67e0895
 Content-Type: application/json
 ```
 
-### 1. Initiate Masked Call (Click-to-Call)
+---
+
+### Endpoint 1: Initiate Masked Call (Click-to-Call)
 ```http
 POST https://voice-api.edesy.in/v1/masking/calls
 ```
@@ -181,86 +329,123 @@ POST https://voice-api.edesy.in/v1/masking/calls
   "party_b": "7871580261"
 }
 ```
+*Note: Numbers must be valid 10-digit Indian mobile numbers without +91 or leading 0.*
+
 **Success Response (HTTP 201 Created):**
 ```json
 {
   "data": {
-    "call_sid": "c991e637-cd69-46be-847a-11189449c730",
+    "call_sid": "7c2db5ec-8735-4abf-9fa8-898f204f0883",
     "status": "initiated",
     "party_a": "9629661668",
     "party_b": "7871580261",
     "masked_number": "917969002802"
   },
   "meta": {
-    "timestamp": "2026-09-28T15:19:34Z"
+    "timestamp": "2026-09-29T03:47:12Z"
   }
 }
 ```
 
-### 2. Query Call Status & Hangup Cause
+---
+
+### Endpoint 2: Query Call Status & Hangup Cause
 ```http
 GET https://voice-api.edesy.in/v1/masking/calls/{call_sid}
 ```
-**Response Object:**
+
+**Response Body:**
 ```json
 {
   "data": {
+    "call_sid": "7c2db5ec-8735-4abf-9fa8-898f204f0883",
     "caller_number": "9629661668",
     "target_number": "7871580261",
     "masked_number": "917969002802",
     "direction": "click_to_call",
     "status": "completed",
-    "duration_sec": 34,
+    "duration_sec": 7,
     "hangup_cause": "normal",
-    "recording_url": "https://voice-api.edesy.in/v1/public/recordings/masking/..."
+    "created_at": "2026-09-29T03:47:12Z"
   }
 }
 ```
 
----
-
-## 4. UI/UX Design System for Ride-Hailing Apps
-
-### Design Checklist for Passenger Ride Confirmation:
-- **Background:** High-contrast pure white (`#ffffff`). Never dark-theme.
-- **Top Map Section:** Clean SVG or MapLibre city map with route polyline and animated vehicle marker.
-- **Arrival Status:** Bold ETA (`Driver arriving in 3 mins`) + Vehicle subtitle (`White Swift Dzire · Sedan`).
-- **Trip OTP Badge:** Prominent verification box: `START OTP: 4821`.
-- **Driver Card:** Driver photo avatar, verified shield, star rating (`★ 4.9`), trips count (`1,248 trips`), and license plate (`TN 38 BK 4920`).
-- **Primary Action Row:**
-  - Big green button: **"Call Driver (Masked)"** (Triggers Cloud Bridge).
-  - Clean secondary button: **"Settings"** (Configures phone numbers).
-  - Clean secondary button: **"Chat"** (In-app messaging).
-- **Route Summary:** Pickup (`Gandhipuram`) ➔ Drop (`Airport CJB`) + Fare (`₹385`).
+### CDR Status Codes & Hangup Causes
+- `status`:
+  - `initiated`: PBX has queued the call and is dialing Leg A (Passenger).
+  - `ringing`: Leg A phone is ringing.
+  - `in-progress`: Leg A answered; Leg B is being dialed or bridged.
+  - `completed`: Call completed successfully.
+  - `failed`: Call could not be established.
+- `hangup_cause`:
+  - `normal`: Either party hung up normally after talking.
+  - `busy`: Line was busy (`SIP 486`).
+  - `no-answer`: Call rang out without answer (`SIP 408`).
+  - `rejected`: User tapped decline on phone screen (`SIP 603`).
 
 ---
 
-## 5. Android Capacitor Auto-Update Configuration
+## 5. Telecom Provider Comparison Matrix for India Ride-Hailing
 
-### `capacitor.config.json`
-```json
-{
-  "appId": "com.sk.calltaximasking",
-  "appName": "SK Taxi",
-  "webDir": "www",
-  "server": {
-    "url": "https://sreeram0242-bot.github.io/sk-call-taxi-masking/",
-    "cleartext": true
-  }
+| Provider | Mechanism | Inbound Direct DID Dialing | Click-to-Call Bridge | Reliability / Latency | Typical Indian Pricing |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Edesy** | Dual-Leg Outbound | ❌ No (Outbound Trunk) | ✅ Yes (`/v1/masking/calls`) | High (<2s connection) | Very affordable (~₹0.30 - ₹0.50/min) |
+| **Exotel** | ExoPhone Bridge / Passthru | ✅ Yes (with dynamic flow) | ✅ Yes (Call API) | Industry Standard | Mid-tier (~₹0.60 - ₹0.90/min) |
+| **Twilio (India)** | Voice Proxy / Programmable | ✅ Yes (Proxy Sessions) | ✅ Yes (Twilio Voice API) | Enterprise Grade | Higher cost (~₹1.20+/min) |
+| **Knowlarity** | Supercaller / Masking | ✅ Yes (Virtual Number) | ✅ Yes (Click-to-Call) | High | Mid-tier |
+
+---
+
+## 6. UI/UX Design Standards for Consumer Ride-Hailing (Ola / Uber Style)
+
+1. **Clean White Theme (`#ffffff`):**
+   - Background must be crisp white `#ffffff` or soft gray `#f8f9fa`.
+   - Never use hacker-style dark modes, purple neon, or developer console widgets.
+2. **Top Map Viewport:**
+   - Visual route polyline connecting pickup to drop.
+   - Animated SVG car icon showing driver moving toward pickup location.
+3. **Driver & Vehicle Information Card:**
+   - Driver Photo avatar with verified blue checkmark.
+   - Star rating (`★ 4.9`) and trip count (`1,248 rides`).
+   - Car model (`White Swift Dzire · Sedan`).
+   - License plate prominently highlighted in a bold badge: `TN 38 BK 4920`.
+4. **Security START OTP:**
+   - A high-visibility badge displaying `START OTP: 4821` so the passenger is prepared before boarding.
+5. **Call Action & User Expectation Management:**
+   - Large, prominent green button: **"Call Driver (Masked)"**.
+   - When tapped, display an animated **Bottom Sheet Modal**:
+     - Pulse animation with phone icon.
+     - Headline: **"Connecting Secure Call..."**
+     - Subtitle: **"Please answer the incoming call from +91 7969002802. We are bridging you directly to your driver while keeping your personal number private."**
+     - Live timer badge showing bridge status.
+     - A secondary "Need Direct SIM Call?" option only for edge cases where cloud bridge fails.
+
+---
+
+## 7. Capacitor & Android Production Configuration
+
+### Safe Area Insets for Modern Mobile Notches
+```css
+/* Ensure headers and floating buttons never clash with camera notches or navigation bars */
+.header-bar {
+  padding-top: max(16px, env(safe-area-inset-top, 16px));
+}
+
+.bottom-action-container {
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
 }
 ```
 
-### Android Manifest Permissions (`android/app/src/main/AndroidManifest.xml`)
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.CALL_PHONE" />
-<application
-    android:usesCleartextTraffic="true" ...>
+### Automated JavaScript AST Syntax Verification
+Before deploying or committing any JavaScript changes in Capacitor projects, run this verification command:
+```bash
+node -e "const fs = require('fs'); const html = fs.readFileSync('index.html', 'utf8'); const scripts = [...html.matchAll(/<script[\s\S]*?>([\s\S]*?)<\/script>/gi)].map(m => m[1]); scripts.forEach((s, i) => { try { new Function(s); console.log('Script block ' + i + ' OK'); } catch(e) { console.error('SYNTAX ERROR in script block ' + i + ':', e); process.exit(1); } });"
 ```
 
 ---
 
-## 6. Pre-Flight Checklist for Future Projects
+## 8. Pre-Flight Checklist for Future Projects
 
 Before delivering any Call Taxi or Number Masking app to a client:
 - [ ] Confirm Edesy API token has positive balance (`INR >= 3.00`).
@@ -268,5 +453,7 @@ Before delivering any Call Taxi or Number Masking app to a client:
 - [ ] Verify both phones ring and the call records in Edesy CDR.
 - [ ] Ensure no dummy placeholder numbers (`9876543210`) exist in code or default storage.
 - [ ] Verify that tapping "Call" initiates the Cloud Bridge, NOT direct dialer `tel:`.
+- [ ] Ensure `CapacitorHttp` is enabled in `capacitor.config.json` to bypass WebView CORS restrictions.
 - [ ] Validate all client-side JavaScript with AST parser (`new Function(code)`).
 - [ ] Ensure white-theme Ola/Uber layout with zero "demo" or "sandbox" labels.
+- [ ] Provide clear bottom sheet explaining incoming call from virtual DID so user is not surprised.

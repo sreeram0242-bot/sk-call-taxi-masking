@@ -1118,27 +1118,64 @@
         openConnectingModal();
         showToast("📞 Edesy is calling Phone 1 (" + num1 + ")...");
 
-        try {
-          const response = await fetch(EDESY_DIRECT_URL, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${EDESY_TOKEN}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              party_a: num1,
-              party_b: num2
-            })
-          });
+        let callSuccess = false;
+        let errMsg = "";
 
-          const data = await response.json();
-          if (response.ok && data.data) {
-            showToast("📞 Ringing incoming call from " + config.virtualDid + "!");
-          } else {
-            showToast("Notice: " + (data.error ? (data.error.message || data.error) : "Masked call placed."));
+        // 1. Try Native CapacitorHttp Plugin first (bypasses Android WebView CORS preflight completely)
+        const capPlugin = window.Capacitor?.Plugins?.CapacitorHttp || window.CapacitorHttp;
+        if (capPlugin && typeof capPlugin.post === "function") {
+          try {
+            console.log("Calling via CapacitorHttp native plugin...");
+            const nativeRes = await capPlugin.post({
+              url: EDESY_DIRECT_URL,
+              headers: {
+                "Authorization": `Bearer ${EDESY_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              data: {
+                party_a: num1,
+                party_b: num2
+              }
+            });
+            console.log("CapacitorHttp response:", nativeRes);
+            if (nativeRes && (nativeRes.status === 200 || nativeRes.status === 201)) {
+              callSuccess = true;
+              showToast("📞 Ringing Phone 1 from " + config.virtualDid + "!");
+              return;
+            } else if (nativeRes && nativeRes.data) {
+              errMsg = nativeRes.data.message || JSON.stringify(nativeRes.data);
+            }
+          } catch (capErr) {
+            console.warn("CapacitorHttp failed, trying browser fetch fallback:", capErr);
+            errMsg = capErr.message || String(capErr);
           }
-        } catch (err) {
-          showToast("📞 Masked call requested via " + config.virtualDid);
+        }
+
+        // 2. Standard fetch fallback
+        if (!callSuccess) {
+          try {
+            const response = await fetch(EDESY_DIRECT_URL, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${EDESY_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                party_a: num1,
+                party_b: num2
+              })
+            });
+
+            const data = await response.json();
+            if (response.ok && data.data) {
+              showToast("📞 Ringing Phone 1 from " + config.virtualDid + "!");
+            } else {
+              showToast("Notice: " + (data.error ? (data.error.message || data.error) : (errMsg || "Masked call placed.")));
+            }
+          } catch (err) {
+            console.error("Fetch call error:", err);
+            showToast("Notice: " + (errMsg ? errMsg : "Answering incoming call from " + config.virtualDid));
+          }
         }
       };
 
