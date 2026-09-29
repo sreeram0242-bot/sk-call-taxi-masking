@@ -168,6 +168,16 @@ To ensure neither Antigravity nor any developer repeats these errors in future c
 
 ---
 
+### Mistake 13: Missing `capacitor.js` Bundle When Loading Remote `server.url`
+- **What Was Built:** Pointed `server.url` in `capacitor.config.json` to GitHub Pages, but forgot to bundle and include `capacitor.js` in the remote `<head>`.
+- **Why It Failed:** 
+  1. Without `<script src="capacitor.js"></script>`, `window.Capacitor` was `undefined`.
+  2. The app could not access native Android plugins (`CapacitorHttp`), and fell back to standard browser `fetch()`.
+  3. The browser `fetch()` encountered either CORS preflight drops or Indian ISP carrier DNS blocks (`*.workers.dev`), resulting in a cryptic `"Failed to fetch"` error.
+- **The Permanent Rule:** Whenever using a remote `server.url`, always copy `node_modules/@capacitor/core/dist/capacitor.js` into the web root and ensure `<script src="capacitor.js"></script>` is in `<head>`. This enables native Android Java `HttpURLConnection` for all API calls, completely bypassing browser CORS and carrier DNS filters.
+
+---
+
 ## 2. Telecom Architecture: Dual-Leg Cloud Bridge vs Inbound Dynamic DID Mapping
 
 Understanding how telecom routing works under the hood is critical to choosing the right architecture and avoiding broken implementations.
